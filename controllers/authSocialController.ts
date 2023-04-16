@@ -1,51 +1,17 @@
-import {connection} from "./index";
+import {connection} from "../index";
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const {validationResult} = require('express-validator')
 
 
-class authController {
-    //async auth(req: any, res: any) {
-    //    try {
-    //        const token = req.cookies.token;
-    //        console.log(token)
-    //        if (!token) {
-    //            return res.status(401).json({message: 'Unauthorized in token', token, code: 401});
-    //        }
-    //        const decodedToken = jwt.verify(token, 'secret');
-    //        const email = decodedToken.email;
-    //        const userExistsQuery = `SELECT * FROM Users WHERE email = '${email}'`;
-    //        connection.query(userExistsQuery, (error: any, results: any) => {
-    //            if (error) throw error;
-    //            if (results.length === 1) {
-    //                const user = results[0];
-    //                const userData = {
-    //                    id: user.id,
-    //                    email: user.email,
-    //                    userName: user.userName,
-    //                    role: user.role,
-    //                    isBlocked: user.isBlocked,
-    //                    createdAt: user.createdAt,
-    //                    updatedAt: user.updatedAt
-    //                };
-    //                return res.status(200).json({data: userData, code: 200});
-    //            } else {
-    //                return res.status(401).json({message: 'Unauthorized in user', code: 401});
-    //            }
-    //        });
-    //    } catch (e) {
-    //        console.log(e)
-    //        res.status(400).json({message: 'Me error', code: 400})
-    //    }
-    //}
-
+class authSocialController {
     async login(req: any, res: any) {
         try {
             const {email, password} = req.body;
             const updateLoginDate = `UPDATE Users SET updatedAt=CURRENT_TIMESTAMP WHERE email='${email}'`;
             connection.query(updateLoginDate, (error: any, results: any) => {
                 if (error) {
-                   return results.status(400).json({message: 'Login error', code: 400})
+                    return results.status(400).json({message: 'Login error', code: 400})
                 } else {
                     const query = `SELECT * FROM Users WHERE email = '${email}'`;
                     connection.query(query, (error: any, results: any) => {
@@ -56,7 +22,8 @@ class authController {
                             const userData = {
                                 id: user.id,
                                 email: user.email,
-                                userName: user.userName,
+                                firstName: user.firstName,
+                                lastLame: user.lastLame,
                                 role: user.role,
                                 avatar: user.avatar,
                                 isBlocked: user.isBlocked,
@@ -104,11 +71,11 @@ class authController {
             if (!errors.isEmpty()) {
                 return res.status(400).json({message: "Registration error", errors, code: 400})
             }
-            const {userName, email, password} = req.body;
+            const {firstName, lastName, email, password} = req.body;
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
             const userExistsQuery = `SELECT * FROM Users WHERE email = '${email}'`;
-            const userRegisterQuery = `INSERT INTO Users (userName, email, password) VALUES ('${userName}', '${email}', '${hashedPassword}')`;
+            const userRegisterQuery = `INSERT INTO Users (firstName, lastName, email, password) VALUES ('${firstName}', '${lastName}', '${email}', '${hashedPassword}')`;
             connection.query(userExistsQuery, (error: any, results: any) => {
                 if (error) throw error;
                 if (results.length === 1) {
@@ -126,22 +93,6 @@ class authController {
             res.status(400).json({message: 'Registration error', code: 400})
         }
     }
-
-
-    async logout(req: any, res: any) {
-        try {
-            res.cookie('token', "", {
-                expires: new Date(0),
-                sameSite: 'none',
-                secure: "true",
-                httpOnly: true,
-            })
-            res.status(200).json({message: 'Logout successful', code: 200});
-        } catch (e) {
-            console.log(e)
-            res.status(400).json({message: 'Logout error', code: 400})
-        }
-    }
 }
 
-module.exports = new authController()
+module.exports = new authSocialController()

@@ -10,9 +10,9 @@ const PORT = process.env.PORT || 7542;
 export const connection = mysql.createConnection({
     host: 'gateway01.eu-central-1.prod.aws.tidbcloud.com',
     port: 4000,
-    user: '2zh1Y7ciMFXLeFu.root',
-    password: '0RZCH7aOEw8s9WfX',
-    database: 'users_schema',
+    user: '41GD3HPHAnrWPsk.root',
+    password: 'x7BnxU2qF6DxzuWn',
+    database: 'reviewer',
     ssl: {
         minVersion: 'TLSv1.2',
         rejectUnauthorized: true
