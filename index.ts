@@ -3,8 +3,9 @@ const cors = require('cors')
 const app = express()
 const mysql = require('mysql')
 const cookieParser = require('cookie-parser')
-const authRouter = require('./authRouter')
-const usersRouter = require('./usersRouter')
+const reviewRouter = require('./routers/reviewRouter')
+const usersRouter = require('./routers/usersRouter')
+const commentsRouter = require('./routers/commentsRouter')
 const PORT = process.env.PORT || 7542;
 
 export const connection = mysql.createConnection({
@@ -40,8 +41,9 @@ const jsonBodyMiddleWare = express.json()
 app.use(jsonBodyMiddleWare)
 app.use(cors(corsOptions));
 app.use(cookieParser('secret key'))
-app.use('/auth', authRouter);
+app.use('/review', reviewRouter);
 app.use('/users', usersRouter);
+app.use('/comment', commentsRouter);
 
 
 app.get("/", (req, res) => {

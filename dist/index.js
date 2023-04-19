@@ -9,8 +9,9 @@ const cors = require('cors');
 const app = (0, express_1.default)();
 const mysql = require('mysql');
 const cookieParser = require('cookie-parser');
-const authRouter = require('./authRouter');
-const usersRouter = require('./usersRouter');
+const reviewRouter = require('./routers/reviewRouter');
+const usersRouter = require('./routers/usersRouter');
+const commentsRouter = require('./routers/commentsRouter');
 const PORT = process.env.PORT || 7542;
 exports.connection = mysql.createConnection({
     host: 'gateway01.eu-central-1.prod.aws.tidbcloud.com',
@@ -43,8 +44,9 @@ const jsonBodyMiddleWare = express_1.default.json();
 app.use(jsonBodyMiddleWare);
 app.use(cors(corsOptions));
 app.use(cookieParser('secret key'));
-app.use('/auth', authRouter);
+app.use('/review', reviewRouter);
 app.use('/users', usersRouter);
+app.use('/comment', commentsRouter);
 app.get("/", (req, res) => {
     res.json({ message: "hi from Express App" });
     return console.log('Connection closed');

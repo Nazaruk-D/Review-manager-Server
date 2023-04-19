@@ -1,5 +1,5 @@
 const RouterUsers = require('express')
-const usersController = require('./usersController')
+const usersController = require('../controllers/usersController')
 const usersRouter = new RouterUsers()
 
 const usersEndPoints = {
