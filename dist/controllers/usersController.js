@@ -10,10 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supabase_1 = require("../supabase");
-const dropbox_1 = require("../utils/dropbox");
+const firebase_1 = require("../utils/firebase");
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
-const fs = require('fs');
+const upload = multer({ storage: multer.memoryStorage() });
+const storage_1 = require("firebase/storage");
 class UsersController {
     uploadProfileInfo(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -25,22 +25,15 @@ class UsersController {
                     const file = req.file;
                     const newName = req.body.newName;
                     const userId = req.body.userId;
-                    let linkResponse;
-                    yield (0, dropbox_1.checkAccessToken)();
+                    let downloadURL;
                     if (file) {
-                        const path = `/review-manager/${userId}/${file.originalname}`;
-                        const response = yield dropbox_1.dbx.filesUpload({
-                            path: path,
-                            contents: fs.readFileSync(file.path)
-                        });
-                        fs.unlinkSync(file.path);
-                        linkResponse = yield dropbox_1.dbx.sharingCreateSharedLink({
-                            path: response.result.path_display
-                        });
-                        const linkImage = linkResponse.result.url.replace('dl=0', 'dl=1');
+                        const storageRef = (0, storage_1.ref)(firebase_1.storage, `review-manager/${userId}/${file.originalname}`);
+                        const metadata = { contentType: file.mimeType };
+                        const snapshot = yield (0, storage_1.uploadBytesResumable)(storageRef, file.buffer, metadata);
+                        downloadURL = yield (0, storage_1.getDownloadURL)(snapshot.ref);
                         const { data, error } = yield supabase_1.supabase
                             .from('users')
-                            .update({ main_photo: linkImage, small_photo: linkImage })
+                            .update({ main_photo: downloadURL, small_photo: downloadURL })
                             .match({ id: userId });
                         if (error) {
                             console.log(error);
@@ -57,13 +50,14 @@ class UsersController {
                     }
                     return res.status(200).send({
                         message: 'Upload profile info successfully',
-                        data: { url: linkResponse === null || linkResponse === void 0 ? void 0 : linkResponse.result.url, newName },
+                        data: { url: downloadURL, newName },
                         statusCode: 200
                     });
                 }));
             }
             catch (e) {
                 console.log(e);
+                return res.status(500).send({ message: 'Internal server error' });
             }
         });
     }
@@ -74,6 +68,7 @@ class UsersController {
             }
             catch (e) {
                 console.log(e);
+                return res.status(500).send({ message: 'Internal server error' });
             }
         });
     }

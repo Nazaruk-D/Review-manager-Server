@@ -1,16 +1,25 @@
-const { Dropbox, DropboxAuth } = require('dropbox')
+const { DbxAuth, Dbx } = require('dropbox');
+import fetch from 'node-fetch';
+//const fetch = require('node-fetch');
+const { Dropbox } = require('dropbox');
 
-const auth = new DropboxAuth({
-    accessToken: 'sl.Bc6cvAJgiPCQBW7q0qHVOu0U-xmVDm2FJIXILRttIqkrJrZgoiZ9hAaZxV7W7G8F7_U2Ldn5foFqTRTif_wERENOn0YkdAJIecjeTL4rcP1RsS-P2YW8aNND_tAoJOaCYpx5A150y-DM'
-});
+const APP_KEY = '1n7ktv09r5w0zz7';
+const APP_SECRET = 'qmhpegk1qt39e62';
 
-export const dbx = new Dropbox({
-    auth: auth
-});
+const dbx = new Dropbox({ fetch, clientId: APP_KEY, clientSecret: APP_SECRET });
 
-export async function checkAccessToken() {
-    if (auth.getAccessTokenExpiresAt(Date.now()) < Date.now() + 60 * 60 * 1000) {
-        const refreshedToken = await auth.tokenRefresh();
-        dbx.setAccessToken(refreshedToken.accessToken);
-    }
+async function getAccessToken() {
+    // Запрос на получение токена
+    const response = await dbx.auth.tokenFromOAuth1({
+        oauth1Token: 'your_oauth1_token',
+        oauth1TokenSecret: 'your_oauth1_token_secret'
+    });
+    console.log(response.result.access_token)
+    return response.result.access_token;
 }
+
+// Теперь вы можете использовать этот токен для выполнения запросов к Dropbox API
+getAccessToken();
+//console.log(accessToken)
+//const response = await dbx.filesListFolder({ path: '' });
+//console.log(response);

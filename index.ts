@@ -7,6 +7,8 @@ const reviewRouter = require('./routers/reviewRouter')
 const usersRouter = require('./routers/usersRouter')
 const commentsRouter = require('./routers/commentsRouter')
 const PORT = process.env.PORT || 7542;
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const connection = mysql.createConnection({
     host: 'gateway01.eu-central-1.prod.aws.tidbcloud.com',
