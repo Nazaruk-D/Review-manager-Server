@@ -45,7 +45,7 @@ app.use(jsonBodyMiddleWare);
 app.use(cors(corsOptions));
 app.use(cookieParser('secret key'));
 app.use('/review', reviewRouter);
-app.use('/users', usersRouter);
+app.use('/user', usersRouter);
 app.use('/comment', commentsRouter);
 app.get("/", (req, res) => {
     res.json({ message: "hi from Express App" });
