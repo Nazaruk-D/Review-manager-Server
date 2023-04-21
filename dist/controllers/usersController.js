@@ -10,12 +10,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supabase_1 = require("../supabase");
+const dropbox_1 = require("../utils/dropbox");
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
-const Dropbox = require('dropbox').Dropbox;
 const fs = require('fs');
-const path = require('path');
-const dbx = new Dropbox({ accessToken: 'sl.Bc6FBT2N58OM7cePdi36JaHdug2_U2qSc2XmJVIhl2sIVUGzmT3__mUhllVJv3NFEqwl22SGZ-1JC6NWjcdrLMJHdZ_cf-sqM9J9J-JPNOYdI97J7fb4TvP00IkJeSGgGCMp-z_76Ch-' });
 class UsersController {
     uploadProfileInfo(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -28,14 +26,15 @@ class UsersController {
                     const newName = req.body.newName;
                     const userId = req.body.userId;
                     let linkResponse;
+                    yield (0, dropbox_1.checkAccessToken)();
                     if (file) {
                         const path = `/review-manager/${userId}/${file.originalname}`;
-                        const response = yield dbx.filesUpload({
+                        const response = yield dropbox_1.dbx.filesUpload({
                             path: path,
                             contents: fs.readFileSync(file.path)
                         });
                         fs.unlinkSync(file.path);
-                        linkResponse = yield dbx.sharingCreateSharedLink({
+                        linkResponse = yield dropbox_1.dbx.sharingCreateSharedLink({
                             path: response.result.path_display
                         });
                         const linkImage = linkResponse.result.url.replace('dl=0', 'dl=1');

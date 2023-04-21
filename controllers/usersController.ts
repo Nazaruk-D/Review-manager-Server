@@ -1,13 +1,8 @@
 import {supabase} from "../supabase";
-import {log} from "util";
-
+import {checkAccessToken, dbx} from "../utils/dropbox";
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
-const Dropbox = require('dropbox').Dropbox;
 const fs = require('fs');
-const path = require('path');
-
-const dbx = new Dropbox({ accessToken: 'sl.Bc6FBT2N58OM7cePdi36JaHdug2_U2qSc2XmJVIhl2sIVUGzmT3__mUhllVJv3NFEqwl22SGZ-1JC6NWjcdrLMJHdZ_cf-sqM9J9J-JPNOYdI97J7fb4TvP00IkJeSGgGCMp-z_76Ch-' });
 
 class UsersController {
     async uploadProfileInfo(req: {file?: any, body: {userId: string, newName?: string}}, res: any) {
@@ -21,6 +16,8 @@ class UsersController {
                 const newName = req.body.newName;
                 const userId = req.body.userId;
                 let linkResponse;
+
+                await checkAccessToken()
 
                 if (file) {
                     const path = `/review-manager/${userId}/${file.originalname}`;
