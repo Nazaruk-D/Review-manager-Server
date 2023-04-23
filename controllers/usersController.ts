@@ -21,8 +21,6 @@ class UsersController {
                     const metadata = {contentType: file.mimeType}
                     const snapshot = await uploadBytesResumable(storageRef, file.buffer, metadata)
                     downloadURL = await getDownloadURL(snapshot.ref)
-
-
                     const {data, error} = await supabase
                         .from('users')
                         .update({main_photo: downloadURL, small_photo: downloadURL})

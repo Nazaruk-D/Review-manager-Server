@@ -1,4 +1,8 @@
 import {supabase} from "../supabase";
+import {storage} from "../utils/firebase";
+const multer = require('multer');
+const upload = multer({storage: multer.memoryStorage()});
+import {ref, getDownloadURL, uploadBytesResumable} from "firebase/storage";
 
 class reviewController {
     async getReviews(req: any, res: any) {
@@ -27,17 +31,6 @@ class reviewController {
             return;
         }
 
-        const { data: images, error: imagesError } = await supabase
-            .from('images')
-            .select('*')
-            .in('review_id', reviewIds);
-
-        if (imagesError) {
-            console.error(imagesError);
-            res.status(500).json({message: 'Internal server error', code: 500});
-            return;
-        }
-
         const { data: likes, error: likesError } = await supabase
             .from('likes')
             .select('*')
@@ -51,13 +44,11 @@ class reviewController {
 
         const reviewsWithData = reviews.map((review) => {
             const reviewTags = tags.filter((tag:any) => tag.review_tags!.find((rt:any) => rt.review_id === review.id));
-            const reviewImages = images.filter(image => image.review_id === review.id);
             const reviewLikes = likes.filter(like => like.review_id === review.id);
 
             return {
                 ...review,
                 tags: reviewTags.map((tag: any) => tag.name),
-                images: reviewImages,
                 likes: reviewLikes
             };
         });
@@ -65,65 +56,128 @@ class reviewController {
         res.status(200).json({message: 'Reviews', data: reviewsWithData, code: 200});
     }
 
+    async getReviewById(req: any, res: any) {
+        const reviewId = req.params.reviewId;
+
+        // Получаем информацию о рецензии по ее id
+        const { data: review, error: reviewError } = await supabase
+            .from('reviews')
+            .select('*')
+            .eq('id', reviewId)
+            .single();
+
+        if (reviewError) {
+            console.error(reviewError);
+            res.status(500).json({ message: 'Internal server error', code: 500 });
+            return;
+        }
+
+        // Получаем теги, связанные с отзывом
+        const { data: tags, error: tagsError } = await supabase
+            .from('review_tags')
+            .select('tag_id')
+            .eq('review_id', reviewId);
+
+        if (tagsError) {
+            console.error(tagsError);
+            res.status(500).json({ message: 'Internal server error', code: 500 });
+            return;
+        }
+
+        // Получаем информацию о каждом теге и добавляем ее к отзыву
+        const tagIds = tags.map((tag) => tag.tag_id);
+        const { data: tagData, error: tagDataError } = await supabase
+            .from('tags')
+            .select('name')
+            .in('id', tagIds);
+
+        if (tagDataError) {
+            console.error(tagDataError);
+            res.status(500).json({ message: 'Internal server error', code: 500 });
+            return;
+        }
+
+        const tagNames = tagData.map((tag) => tag.name);
+        review.tags = tagNames;
+
+        res.status(200).json({ message: 'Review', data: {...review}, code: 200 });
+    }
+
     async createReview(req: any, res: any) {
         try {
-            const {title, review_title, body, category, rating, author_id, tags, photo, author_name} = req.body;
+            upload.single('reviewImage')(req, res, async (err: any) => {
+                if (err) {
+                    return res.status(400).send({message: err.message});
+                }
+                const file = req.file;
+                const {title, review_title, body, category, rating, author_id, tags, author_name} = req.body;
+                let downloadURL;
+                let newReviewId: any;
 
-            const {data, error} = await supabase
-                .from('reviews')
-                .insert({title, review_title, body, category, rating, author_id, author_name})
-                .select('id')
-                .single();
+                if (file) {
+                    const storageRef = ref(storage, `review-manager/${author_id}/${file.originalname}`)
+                    const metadata = {contentType: file.mimeType}
+                    const snapshot = await uploadBytesResumable(storageRef, file.buffer, metadata)
+                    downloadURL = await getDownloadURL(snapshot.ref)
 
-            if (error) {
-                throw error;
-            }
-
-            const newReviewId = data.id;
-
-            if (tags && tags.length > 0) {
-                const tagIds = await Promise.all(tags.map(async (tag: string) => {
                     const {data, error} = await supabase
-                        .from('tags')
+                        .from('reviews')
+                        .insert({title, review_title, body, category, rating, author_id, author_name, image: downloadURL})
                         .select('id')
-                        .eq('name', tag)
+                        .single();
+                    if (error) {
+                        console.log(error);
+                    }
+                    newReviewId = data!.id;
+
+                } else {
+                    const {data, error} = await supabase
+                        .from('reviews')
+                        .insert({title, review_title, body, category, rating, author_id, author_name})
+                        .select('id')
                         .single();
 
-                    if (!data) {
-                        const {data, error: tagError} = await supabase
-                            .from('tags')
-                            .insert({name: tag})
-                            .select('id')
-                            .single<{id: string}>();
-                        if (tagError) throw tagError;
-
-                        return data?.id;
+                    if (error) {
+                        console.log(error);
+                        return
                     }
+                    newReviewId = data.id;
+                }
 
-                    return data.id;
-                }));
+                if (tags && tags.length > 0) {
+                    const tagIds = await Promise.all(tags.map(async (tag: string) => {
+                        const {data, error} = await supabase
+                            .from('tags')
+                            .select('id')
+                            .eq('name', tag)
+                            .single();
 
-                const reviewTagInserts = tagIds.map((tagId) => {
-                    return {review_id: newReviewId, tag_id: tagId};
-                });
+                        if (!data) {
+                            const {data, error: tagError} = await supabase
+                                .from('tags')
+                                .insert({name: tag})
+                                .select('id')
+                                .single<{id: string}>();
+                            if (tagError) throw tagError;
 
-                const {error: reviewTagError} = await supabase
-                    .from('review_tags')
-                    .insert(reviewTagInserts)
+                            return data?.id;
+                        }
 
-                if (reviewTagError) throw reviewTagError;
-            }
+                        return data.id;
+                    }));
 
-            if (photo && photo.length > 0) {
-                const {data: imageData, error: imageError} = await supabase
-                    .from('images')
-                    .insert({url: photo, review_id: newReviewId})
-                    .single();
+                    const reviewTagInserts = tagIds.map((tagId) => {
+                        return {review_id: newReviewId, tag_id: tagId};
+                    });
 
-                if (imageError) throw imageError;
-            }
+                    const {error: reviewTagError} = await supabase
+                        .from('review_tags')
+                        .insert(reviewTagInserts)
 
-            res.status(201).json({message: 'Review added', data: req.body, code: 201});
+                    if (reviewTagError) throw reviewTagError;
+                }
+                res.status(201).json({message: 'Review added', data: req.body, code: 201});
+            })
         } catch (e) {
             console.log(e)
             res.status(400).json({message: 'Logout error', code: 400})

@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.connection = void 0;
 const express_1 = __importDefault(require("express"));
 const cors = require('cors');
 const app = (0, express_1.default)();
@@ -15,25 +14,6 @@ const commentsRouter = require('./routers/commentsRouter');
 const PORT = process.env.PORT || 7542;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-exports.connection = mysql.createConnection({
-    host: 'gateway01.eu-central-1.prod.aws.tidbcloud.com',
-    port: 4000,
-    user: '41GD3HPHAnrWPsk.root',
-    password: 'x7BnxU2qF6DxzuWn',
-    database: 'reviewer',
-    ssl: {
-        minVersion: 'TLSv1.2',
-        rejectUnauthorized: true
-    }
-});
-exports.connection.connect((err) => {
-    if (err) {
-        return console.log(JSON.stringify(err));
-    }
-    else {
-        return console.log('Connection successful');
-    }
-});
 const corsOptions = {
     origin: (origin, callback) => {
         console.log("origin: ", origin);

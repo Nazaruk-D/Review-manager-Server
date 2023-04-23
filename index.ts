@@ -10,25 +10,6 @@ const PORT = process.env.PORT || 7542;
 import dotenv from 'dotenv';
 dotenv.config();
 
-export const connection = mysql.createConnection({
-    host: 'gateway01.eu-central-1.prod.aws.tidbcloud.com',
-    port: 4000,
-    user: '41GD3HPHAnrWPsk.root',
-    password: 'x7BnxU2qF6DxzuWn',
-    database: 'reviewer',
-    ssl: {
-        minVersion: 'TLSv1.2',
-        rejectUnauthorized: true
-    }
-});
-
-connection.connect((err: any) => {
-    if (err) {
-        return console.log(JSON.stringify(err))
-    } else {
-        return console.log('Connection successful')
-    }
-})
 
 const corsOptions = {
     origin: (origin: any, callback: any) => {
@@ -47,12 +28,10 @@ app.use('/review', reviewRouter);
 app.use('/user', usersRouter);
 app.use('/comment', commentsRouter);
 
-
 app.get("/", (req, res) => {
     res.json({message: "hi from Express App"})
     return console.log('Connection closed')
 })
-
 
 app.listen(PORT, () => {
     console.log(`I started listening port: ${PORT}`)
