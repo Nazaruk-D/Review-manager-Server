@@ -53,7 +53,27 @@ class UsersController {
 
     async fetchUsers(req: any, res: any) {
         try {
-            return res.status(200).send({message: 'Getting users successfully', data: {}, statusCode: 200});
+            const { data: users, error: reviewError } = await supabase
+                .from('users')
+                .select('*')
+            return res.status(200).send({message: 'Getting users successfully', data: users, statusCode: 200});
+        } catch (e) {
+            console.log(e)
+            return res.status(500).send({message: 'Internal server error'});
+        }
+    }
+
+    async fetchUser(req: any, res: any) {
+        try {
+            const userId = req.params.userId;
+
+            const { data: user, error: reviewError } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', userId)
+                .single();
+
+            return res.status(200).send({message: 'Getting user data successfully', data: user, statusCode: 200});
         } catch (e) {
             console.log(e)
             return res.status(500).send({message: 'Internal server error'});

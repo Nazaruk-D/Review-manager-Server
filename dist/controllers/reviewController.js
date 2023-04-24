@@ -57,7 +57,6 @@ class reviewController {
     getReviewById(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const reviewId = req.params.reviewId;
-            // Получаем информацию о рецензии по ее id
             const { data: review, error: reviewError } = yield supabase_1.supabase
                 .from('reviews')
                 .select('*')
@@ -68,7 +67,6 @@ class reviewController {
                 res.status(500).json({ message: 'Internal server error', code: 500 });
                 return;
             }
-            // Получаем теги, связанные с отзывом
             const { data: tags, error: tagsError } = yield supabase_1.supabase
                 .from('review_tags')
                 .select('tag_id')
@@ -78,7 +76,6 @@ class reviewController {
                 res.status(500).json({ message: 'Internal server error', code: 500 });
                 return;
             }
-            // Получаем информацию о каждом теге и добавляем ее к отзыву
             const tagIds = tags.map((tag) => tag.tag_id);
             const { data: tagData, error: tagDataError } = yield supabase_1.supabase
                 .from('tags')

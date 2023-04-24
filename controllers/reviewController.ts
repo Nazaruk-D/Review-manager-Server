@@ -58,8 +58,6 @@ class reviewController {
 
     async getReviewById(req: any, res: any) {
         const reviewId = req.params.reviewId;
-
-        // Получаем информацию о рецензии по ее id
         const { data: review, error: reviewError } = await supabase
             .from('reviews')
             .select('*')
@@ -71,20 +69,15 @@ class reviewController {
             res.status(500).json({ message: 'Internal server error', code: 500 });
             return;
         }
-
-        // Получаем теги, связанные с отзывом
         const { data: tags, error: tagsError } = await supabase
             .from('review_tags')
             .select('tag_id')
             .eq('review_id', reviewId);
-
         if (tagsError) {
             console.error(tagsError);
             res.status(500).json({ message: 'Internal server error', code: 500 });
             return;
         }
-
-        // Получаем информацию о каждом теге и добавляем ее к отзыву
         const tagIds = tags.map((tag) => tag.tag_id);
         const { data: tagData, error: tagDataError } = await supabase
             .from('tags')
@@ -96,10 +89,8 @@ class reviewController {
             res.status(500).json({ message: 'Internal server error', code: 500 });
             return;
         }
-
         const tagNames = tagData.map((tag) => tag.name);
         review.tags = tagNames;
-
         res.status(200).json({ message: 'Review', data: {...review}, code: 200 });
     }
 

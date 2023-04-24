@@ -3,11 +3,13 @@ const usersController = require('../controllers/usersController')
 const usersRouter = new RouterUsers()
 
 const usersEndPoints = {
-    uploadPhoto: '/photo',
-    fetchUsers: '/fetch',
+    uploadProfileInfo: '/upload-info',
+    getUsers: '/get-users',
+    getUser: '/get-user/:userId',
 }
 
-usersRouter.put(usersEndPoints.uploadPhoto, usersController.uploadProfileInfo)
-usersRouter.get(usersEndPoints.fetchUsers, usersController.fetchUsers)
+usersRouter.put(usersEndPoints.uploadProfileInfo, usersController.uploadProfileInfo)
+usersRouter.get(usersEndPoints.getUsers, usersController.fetchUsers)
+usersRouter.get(usersEndPoints.getUser, usersController.fetchUser)
 
 module.exports = usersRouter

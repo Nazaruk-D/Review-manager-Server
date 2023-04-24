@@ -64,7 +64,27 @@ class UsersController {
     fetchUsers(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return res.status(200).send({ message: 'Getting users successfully', data: {}, statusCode: 200 });
+                const { data: users, error: reviewError } = yield supabase_1.supabase
+                    .from('users')
+                    .select('*');
+                return res.status(200).send({ message: 'Getting users successfully', data: users, statusCode: 200 });
+            }
+            catch (e) {
+                console.log(e);
+                return res.status(500).send({ message: 'Internal server error' });
+            }
+        });
+    }
+    fetchUser(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userId = req.params.userId;
+                const { data: user, error: reviewError } = yield supabase_1.supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
+                return res.status(200).send({ message: 'Getting user data successfully', data: user, statusCode: 200 });
             }
             catch (e) {
                 console.log(e);
