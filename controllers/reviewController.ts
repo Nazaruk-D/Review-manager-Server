@@ -46,6 +46,7 @@ class reviewController {
             .from('ratings')
             .select('*, users:user_id(*)')
             .in('review_id', reviewIds);
+
         if (ratingsError) {
             console.error(ratingsError);
             res.status(500).json({message: 'Internal server error', code: 500});
@@ -53,15 +54,22 @@ class reviewController {
         }
 
         const reviewsWithData = reviews.map((review) => {
+            const reviewRatings = ratings.filter((rating:any) => rating.review_id === review.id);
+            const ratingScores = reviewRatings.map((rating:any) => rating.value);
+            const ratingUsers = reviewRatings.map((rating:any) => rating.users.id);
+            const avgRating = ratingScores.reduce((acc:any, curr:any) => acc + curr, 0) / ratingScores.length;
+
             const reviewTags = tags.filter((tag:any) => tag.review_tags!.find((rt:any) => rt.review_id === review.id));
             const reviewLikes = likes.filter(like => like.review_id === review.id);
-            const reviewRatings = ratings.filter(rating => rating.review_id === review.id);
 
             return {
                 ...review,
                 tags: reviewTags.map((tag: any) => tag.name),
                 likes: reviewLikes,
-                ratings: reviewRatings
+                rating: {
+                    avgRating,
+                    ratingUsers
+                }
             };
         });
 
@@ -81,6 +89,7 @@ class reviewController {
             res.status(500).json({ message: 'Internal server error', code: 500 });
             return;
         }
+
         const { data: tags, error: tagsError } = await supabase
             .from('review_tags')
             .select('tag_id')
@@ -90,6 +99,7 @@ class reviewController {
             res.status(500).json({ message: 'Internal server error', code: 500 });
             return;
         }
+
         const tagIds = tags.map((tag) => tag.tag_id);
         const { data: tagData, error: tagDataError } = await supabase
             .from('tags')
@@ -101,8 +111,30 @@ class reviewController {
             res.status(500).json({ message: 'Internal server error', code: 500 });
             return;
         }
+
         const tagNames = tagData.map((tag) => tag.name);
         review.tags = tagNames;
+
+
+        const { data: ratings, error: ratingsError } = await supabase
+            .from('ratings')
+            .select('*, users:user_id(*)')
+            .eq('review_id', reviewId);
+
+        if (ratingsError) {
+            console.error(ratingsError);
+            res.status(500).json({message: 'Internal server error', code: 500});
+            return;
+        }
+
+        const ratingScores = ratings.map((rating) => rating.value);
+        const ratingUsers = ratings.map((rating) => rating.user_id);
+        const avgRating = ratingScores.reduce((acc, curr) => acc + curr, 0) / ratingScores.length;
+        review.rating = {
+            avgRating: avgRating,
+            ratingUsers: ratingUsers
+        };
+
         res.status(200).json({ message: 'Review', data: {...review}, code: 200 });
     }
 
@@ -157,8 +189,11 @@ class reviewController {
             const ratingScores = ratings.map((rating) => rating.value);
             const ratingUsers = ratings.map((rating) => rating.user_id);
             const avgRating = ratingScores.reduce((acc, curr) => acc + curr, 0) / ratingScores.length;
-            review.avgRating = avgRating;
-            review.ratingUsers = ratingUsers;
+            if (!review.rating) {
+                review.rating = {};
+            }
+            review.rating.avgRating = avgRating;
+            review.rating.ratingUsers = ratingUsers;
         }
         res.status(200).json({ message: 'Last three reviews', data: reviews, code: 200 });
     }
