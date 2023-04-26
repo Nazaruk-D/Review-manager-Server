@@ -4,20 +4,23 @@ const reviewRouter = new ReviewRouter()
 
 const reviewEndPoints = {
     review: '/',
-    getReviews: '/:userId',
-    getReviewById: '/get-review/:reviewId',
     getLatestReviews: '/last-reviews',
     getPopularTags: '/get-popular-tags',
+    getReviews: '/get-reviews/:userId',
+    reviewById: '/:reviewId',
     setRating: '/rating',
+    changeLikeStatus: '/like',
 }
 
-
-reviewRouter.get(reviewEndPoints.getReviewById, rController.getReviewById)
 reviewRouter.get(reviewEndPoints.getLatestReviews, rController.getLatestReviews)
 reviewRouter.get(reviewEndPoints.getPopularTags, rController.getPopularTags)
+reviewRouter.get(reviewEndPoints.reviewById, rController.getReviewById)
 reviewRouter.get(reviewEndPoints.getReviews, rController.getUserReviews)
 reviewRouter.post(reviewEndPoints.review, rController.createReview)
 reviewRouter.post(reviewEndPoints.setRating, rController.setRating)
+reviewRouter.post(reviewEndPoints.changeLikeStatus, rController.changeLikeStatus)
+reviewRouter.delete(reviewEndPoints.reviewById, rController.deleteReviewById)
+
 
 
 

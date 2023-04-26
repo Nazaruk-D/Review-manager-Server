@@ -19,6 +19,7 @@ class CommentsController {
             return res.status(200).send({message: 'Getting comments successfully', data: comments, statusCode: 200});
         } catch (e) {
             console.log(e)
+            return res.status(500).send({message: 'Internal server error'});
         }
     }
 
