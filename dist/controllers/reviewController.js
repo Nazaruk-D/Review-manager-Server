@@ -336,14 +336,12 @@ class reviewController {
     createReview(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const author_id = req.params.reviewId;
-                console.log("author_id: ", author_id);
                 upload.single('reviewImage')(req, res, (err) => __awaiter(this, void 0, void 0, function* () {
                     if (err) {
                         return res.status(400).send({ message: err.message });
                     }
                     const file = req.file;
-                    let { title, review_title, body, category, assessment, tags, author_name } = req.body;
+                    let { author_id, title, review_title, body, category, assessment, tags, author_name } = req.body;
                     let downloadURL;
                     let newReviewId;
                     if (file) {
@@ -422,6 +420,97 @@ class reviewController {
             }
         });
     }
+    updateReview(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                upload.single('reviewImage')(req, res, (err) => __awaiter(this, void 0, void 0, function* () {
+                    if (err) {
+                        return res.status(400).send({ message: err.message });
+                    }
+                    const file = req.file;
+                    let { author_id, reviewId, title, review_title, body, category, assessment, tags, author_name, } = req.body;
+                    let downloadURL;
+                    if (file) {
+                        const storageRef = (0, storage_1.ref)(firebase_1.storage, `review-manager/${author_id}/${file.originalname}`);
+                        const metadata = { contentType: file.mimeType };
+                        const snapshot = yield (0, storage_1.uploadBytesResumable)(storageRef, file.buffer, metadata);
+                        downloadURL = yield (0, storage_1.getDownloadURL)(snapshot.ref);
+                    }
+                    const { data, error } = yield supabase_1.supabase
+                        .from('reviews')
+                        .update({
+                        title,
+                        review_title,
+                        body,
+                        category,
+                        assessment,
+                        author_id,
+                        author_name,
+                        image: downloadURL,
+                    })
+                        .eq('id', reviewId)
+                        .single();
+                    if (error) {
+                        console.log(error);
+                        return res.status(400).json({
+                            message: 'Review update error',
+                            code: 400,
+                        });
+                    }
+                    if (typeof tags === 'string') {
+                        tags = tags.split(',');
+                    }
+                    if (tags && tags.length > 0) {
+                        const tagIds = yield Promise.all(tags.map((tag) => __awaiter(this, void 0, void 0, function* () {
+                            const { data, error } = yield supabase_1.supabase
+                                .from('tags')
+                                .select('id')
+                                .eq('name', tag)
+                                .single();
+                            if (!data) {
+                                const { data, error: tagError } = yield supabase_1.supabase
+                                    .from('tags')
+                                    .insert({ name: tag })
+                                    .select('id')
+                                    .single();
+                                if (tagError)
+                                    throw tagError;
+                                return data === null || data === void 0 ? void 0 : data.id;
+                            }
+                            return data.id;
+                        })));
+                        const reviewTagDeletes = yield supabase_1.supabase
+                            .from('review_tags')
+                            .delete()
+                            .eq('review_id', reviewId);
+                        if (reviewTagDeletes.error)
+                            throw reviewTagDeletes.error;
+                        const reviewTagInserts = tagIds.map((tagId) => {
+                            return { review_id: reviewId, tag_id: tagId };
+                        });
+                        const { error: reviewTagError } = yield supabase_1.supabase
+                            .from('review_tags')
+                            .insert(reviewTagInserts);
+                        if (reviewTagError)
+                            throw reviewTagError;
+                    }
+                    else {
+                        const reviewTagDeletes = yield supabase_1.supabase
+                            .from('review_tags')
+                            .delete()
+                            .eq('review_id', reviewId);
+                        if (reviewTagDeletes.error)
+                            throw reviewTagDeletes.error;
+                    }
+                    res.status(200).json({ message: 'Review updated', data, code: 200 });
+                }));
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).json({ message: 'Review update error', code: 400 });
+            }
+        });
+    }
     setRating(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -444,6 +533,8 @@ class reviewController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { userId, reviewId } = req.body;
+                console.log(userId);
+                console.log(reviewId);
                 const { data: existingLike, error } = yield supabase_1.supabase
                     .from('likes')
                     .select('id')

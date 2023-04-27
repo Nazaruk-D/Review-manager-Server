@@ -150,7 +150,7 @@ class reviewController {
                 return;
             }
 
-            const usersLiked = likes.map( like => like.user_id)
+            const usersLiked = likes.map(like => like.user_id)
             console.log("usersLiked: ", usersLiked)
             review.likes = usersLiked
 
@@ -231,7 +231,7 @@ class reviewController {
                 });
             }
 
-            const {data: deleteReview,error: deleteReviewError} = await supabase
+            const {data: deleteReview, error: deleteReviewError} = await supabase
                 .from('reviews')
                 .delete()
                 .match({id: reviewId});
@@ -349,14 +349,12 @@ class reviewController {
 
     async createReview(req: any, res: any) {
         try {
-            const author_id = req.params.reviewId;
-            console.log("author_id: ", author_id)
             upload.single('reviewImage')(req, res, async (err: any) => {
                 if (err) {
                     return res.status(400).send({message: err.message});
                 }
                 const file = req.file;
-                let {title, review_title, body, category, assessment, tags, author_name} = req.body;
+                let {author_id, title, review_title, body, category, assessment, tags, author_name} = req.body;
                 let downloadURL;
                 let newReviewId: any;
 
@@ -441,6 +439,127 @@ class reviewController {
         }
     }
 
+    async updateReview(req: any, res: any) {
+        try {
+            upload.single('reviewImage')(req, res, async (err: any) => {
+                if (err) {
+                    return res.status(400).send({message: err.message});
+                }
+
+                const file = req.file;
+                let {
+                    author_id,
+                    reviewId,
+                    title,
+                    review_title,
+                    body,
+                    category,
+                    assessment,
+                    tags,
+                    author_name,
+                } = req.body;
+
+                let downloadURL;
+
+                if (file) {
+                    const storageRef = ref(
+                        storage,
+                        `review-manager/${author_id}/${file.originalname}`
+                    );
+                    const metadata = {contentType: file.mimeType};
+                    const snapshot = await uploadBytesResumable(
+                        storageRef,
+                        file.buffer,
+                        metadata
+                    );
+                    downloadURL = await getDownloadURL(snapshot.ref);
+                }
+
+                const {data, error} = await supabase
+                    .from('reviews')
+                    .update({
+                        title,
+                        review_title,
+                        body,
+                        category,
+                        assessment,
+                        author_id,
+                        author_name,
+                        image: downloadURL,
+                    })
+                    .eq('id', reviewId)
+                    .single();
+
+                if (error) {
+                    console.log(error);
+                    return res.status(400).json({
+                        message: 'Review update error',
+                        code: 400,
+                    });
+                }
+
+                if (typeof tags === 'string') {
+                    tags = tags.split(',');
+                }
+
+                if (tags && tags.length > 0) {
+                    const tagIds = await Promise.all(
+                        tags.map(async (tag: string) => {
+                            const {data, error} = await supabase
+                                .from('tags')
+                                .select('id')
+                                .eq('name', tag)
+                                .single();
+
+                            if (!data) {
+                                const {data, error: tagError} = await supabase
+                                    .from('tags')
+                                    .insert({name: tag})
+                                    .select('id')
+                                    .single<{ id: string }>();
+
+                                if (tagError) throw tagError;
+
+                                return data?.id;
+                            }
+
+                            return data.id;
+                        })
+                    );
+
+                    const reviewTagDeletes = await supabase
+                        .from('review_tags')
+                        .delete()
+                        .eq('review_id', reviewId);
+
+                    if (reviewTagDeletes.error) throw reviewTagDeletes.error;
+
+                    const reviewTagInserts = tagIds.map((tagId) => {
+                        return {review_id: reviewId, tag_id: tagId};
+                    });
+
+                    const {error: reviewTagError} = await supabase
+                        .from('review_tags')
+                        .insert(reviewTagInserts);
+
+                    if (reviewTagError) throw reviewTagError;
+                } else {
+                    const reviewTagDeletes = await supabase
+                        .from('review_tags')
+                        .delete()
+                        .eq('review_id', reviewId);
+
+                    if (reviewTagDeletes.error) throw reviewTagDeletes.error;
+                }
+
+                res.status(200).json({message: 'Review updated', data, code: 200});
+            });
+        } catch (e) {
+            console.log(e);
+            res.status(400).json({message: 'Review update error', code: 400});
+        }
+    }
+
     async setRating(req: any, res: any) {
         try {
             const {userId, reviewId, value} = req.body
@@ -461,6 +580,8 @@ class reviewController {
     async changeLikeStatus(req: any, res: any) {
         try {
             const {userId, reviewId} = req.body;
+            console.log(userId)
+            console.log(reviewId)
             const {data: existingLike, error} = await supabase
                 .from('likes')
                 .select('id')
@@ -469,18 +590,18 @@ class reviewController {
                 .single();
 
             if (existingLike === null) {
-                const { data: newLike, error: insertError } = await supabase
+                const {data: newLike, error: insertError} = await supabase
                     .from('likes')
-                    .insert({ user_id: userId, review_id: reviewId })
+                    .insert({user_id: userId, review_id: reviewId})
                     .single();
 
                 if (insertError) {
                     throw insertError;
                 }
 
-                res.status(200).json({ message: 'Like added', code: 200 });
+                res.status(200).json({message: 'Like added', code: 200});
             } else {
-                const { data: deletedLike, error: deleteError } = await supabase
+                const {data: deletedLike, error: deleteError} = await supabase
                     .from('likes')
                     .delete()
                     .eq('id', existingLike.id)
@@ -490,7 +611,7 @@ class reviewController {
                     throw deleteError;
                 }
 
-                res.status(200).json({ message: 'Like removed', code: 200 });
+                res.status(200).json({message: 'Like removed', code: 200});
             }
         } catch (e) {
             console.log(e)
