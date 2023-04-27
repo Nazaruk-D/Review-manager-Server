@@ -150,8 +150,7 @@ class reviewController {
     deleteReviewById(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const reviewId = req.params.reviewId;
-                // Удаление review_tags связанных с данным отзывом
+                const reviewId = req.body.reviewId;
                 const { data: reviewTagsToDelete, error: reviewTagsError } = yield supabase_1.supabase
                     .from('review_tags')
                     .select('*')
@@ -172,7 +171,6 @@ class reviewController {
                             error: deleteReviewTagsError
                         });
                 }
-                // Удаление ratings связанных с данным отзывом
                 const { data: ratingsToDelete, error: ratingsError } = yield supabase_1.supabase
                     .from('ratings')
                     .select('*')
@@ -190,7 +188,6 @@ class reviewController {
                             error: deleteRatingsError
                         });
                 }
-                // Удаление comments связанных с данным отзывом
                 const { data: commentsToDelete, error: commentsError } = yield supabase_1.supabase
                     .from('comments')
                     .select('*')
@@ -208,7 +205,6 @@ class reviewController {
                             error: deleteCommentsError
                         });
                 }
-                // Удаление likes связанных с данным отзывом
                 const { data: likesToDelete, error: likesError } = yield supabase_1.supabase
                     .from('likes')
                     .select('*')
@@ -225,15 +221,15 @@ class reviewController {
                             message: 'Error deleting likes',
                             error: deleteLikesError
                         });
-                    const { error: deleteReviewError } = yield supabase_1.supabase
-                        .from('reviews')
-                        .delete()
-                        .match({ id: reviewId });
-                    if (deleteReviewError) {
-                        throw deleteReviewError;
-                    }
                 }
-                res.status(200).json({ message: 'Viewer deletion was successful', code: 200 });
+                const { data: deleteReview, error: deleteReviewError } = yield supabase_1.supabase
+                    .from('reviews')
+                    .delete()
+                    .match({ id: reviewId });
+                if (deleteReviewError) {
+                    throw deleteReviewError;
+                }
+                res.status(200).json({ message: 'Review deletion was successful', code: 200 });
             }
             catch (e) {
                 console.log(e);
@@ -340,12 +336,14 @@ class reviewController {
     createReview(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const author_id = req.params.reviewId;
+                console.log("author_id: ", author_id);
                 upload.single('reviewImage')(req, res, (err) => __awaiter(this, void 0, void 0, function* () {
                     if (err) {
                         return res.status(400).send({ message: err.message });
                     }
                     const file = req.file;
-                    const { title, review_title, body, category, assessment, author_id, tags, author_name } = req.body;
+                    let { title, review_title, body, category, assessment, tags, author_name } = req.body;
                     let downloadURL;
                     let newReviewId;
                     if (file) {
@@ -383,6 +381,9 @@ class reviewController {
                             return;
                         }
                         newReviewId = data.id;
+                    }
+                    if (typeof tags === 'string') {
+                        tags = tags.split(',');
                     }
                     if (tags && tags.length > 0) {
                         const tagIds = yield Promise.all(tags.map((tag) => __awaiter(this, void 0, void 0, function* () {

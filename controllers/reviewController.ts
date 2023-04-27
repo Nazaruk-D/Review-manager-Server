@@ -163,9 +163,7 @@ class reviewController {
 
     async deleteReviewById(req: any, res: any) {
         try {
-            const reviewId = req.params.reviewId;
-
-            // Удаление review_tags связанных с данным отзывом
+            const reviewId = req.body.reviewId;
             const {data: reviewTagsToDelete, error: reviewTagsError} = await supabase
                 .from('review_tags')
                 .select('*')
@@ -185,7 +183,6 @@ class reviewController {
                 });
             }
 
-            // Удаление ratings связанных с данным отзывом
             const {data: ratingsToDelete, error: ratingsError} = await supabase
                 .from('ratings')
                 .select('*')
@@ -202,7 +199,6 @@ class reviewController {
                 });
             }
 
-            // Удаление comments связанных с данным отзывом
             const {data: commentsToDelete, error: commentsError} = await supabase
                 .from('comments')
                 .select('*')
@@ -219,7 +215,6 @@ class reviewController {
                 });
             }
 
-            // Удаление likes связанных с данным отзывом
             const {data: likesToDelete, error: likesError} = await supabase
                 .from('likes')
                 .select('*')
@@ -234,16 +229,16 @@ class reviewController {
                     message: 'Error deleting likes',
                     error: deleteLikesError
                 });
-
-                const {error: deleteReviewError} = await supabase
-                    .from('reviews')
-                    .delete()
-                    .match({id: reviewId});
-                if (deleteReviewError) {
-                    throw deleteReviewError;
-                }
             }
-            res.status(200).json({message: 'Viewer deletion was successful', code: 200});
+
+            const {data: deleteReview,error: deleteReviewError} = await supabase
+                .from('reviews')
+                .delete()
+                .match({id: reviewId});
+            if (deleteReviewError) {
+                throw deleteReviewError;
+            }
+            res.status(200).json({message: 'Review deletion was successful', code: 200});
         } catch (e) {
             console.log(e)
             return res.status(500).send({message: 'Internal server error'});
@@ -354,12 +349,14 @@ class reviewController {
 
     async createReview(req: any, res: any) {
         try {
+            const author_id = req.params.reviewId;
+            console.log("author_id: ", author_id)
             upload.single('reviewImage')(req, res, async (err: any) => {
                 if (err) {
                     return res.status(400).send({message: err.message});
                 }
                 const file = req.file;
-                const {title, review_title, body, category, assessment, author_id, tags, author_name} = req.body;
+                let {title, review_title, body, category, assessment, tags, author_name} = req.body;
                 let downloadURL;
                 let newReviewId: any;
 
@@ -401,7 +398,9 @@ class reviewController {
                     }
                     newReviewId = data.id;
                 }
-
+                if (typeof tags === 'string') {
+                    tags = tags.split(',');
+                }
                 if (tags && tags.length > 0) {
                     const tagIds = await Promise.all(tags.map(async (tag: string) => {
                         const {data, error} = await supabase
