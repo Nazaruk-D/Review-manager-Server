@@ -14,6 +14,8 @@ const firebase_1 = require("../utils/firebase");
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const storage_1 = require("firebase/storage");
+const getUsersByLikes_1 = require("../utils/getUsersByLikes");
+const getUsersByRatings_1 = require("../utils/getUsersByRatings");
 class reviewController {
     getUserReviews(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -29,15 +31,6 @@ class reviewController {
                     return;
                 }
                 const reviewIds = reviews.map(review => review.id);
-                const { data: tags, error: tagsError } = yield supabase_1.supabase
-                    .from('tags')
-                    .select('*, review_tags(review_id).tag_id(name)')
-                    .in('review_tags.review_id', reviewIds);
-                if (tagsError) {
-                    console.error(tagsError);
-                    res.status(500).json({ message: 'Internal server error', code: 500 });
-                    return;
-                }
                 const { data: likes, error: likesError } = yield supabase_1.supabase
                     .from('likes')
                     .select('*')
@@ -47,26 +40,9 @@ class reviewController {
                     res.status(500).json({ message: 'Internal server error', code: 500 });
                     return;
                 }
-                const { data: ratings, error: ratingsError } = yield supabase_1.supabase
-                    .from('ratings')
-                    .select('*, users:user_id(*)')
-                    .in('review_id', reviewIds);
-                if (ratingsError) {
-                    console.error(ratingsError);
-                    res.status(500).json({ message: 'Internal server error', code: 500 });
-                    return;
-                }
                 const reviewsWithData = reviews.map((review) => {
-                    const reviewRatings = ratings.filter((rating) => rating.review_id === review.id);
-                    const ratingScores = reviewRatings.map((rating) => rating.value);
-                    const ratingUsers = reviewRatings.map((rating) => rating.users.id);
-                    const avgRating = ratingScores.reduce((acc, curr) => acc + curr, 0) / ratingScores.length;
-                    const reviewTags = tags.filter((tag) => tag.review_tags.find((rt) => rt.review_id === review.id));
                     const reviewLikes = likes.filter(like => like.review_id === review.id);
-                    return Object.assign(Object.assign({}, review), { tags: reviewTags.map((tag) => tag.name), likes: reviewLikes, rating: {
-                            avgRating,
-                            ratingUsers
-                        } });
+                    return Object.assign(Object.assign({}, review), { likes: reviewLikes });
                 });
                 res.status(200).json({ message: 'Reviews', data: reviewsWithData, code: 200 });
             }
@@ -111,22 +87,6 @@ class reviewController {
                 }
                 const tagNames = tagData.map((tag) => tag.name);
                 review.tags = tagNames;
-                const { data: ratings, error: ratingsError } = yield supabase_1.supabase
-                    .from('ratings')
-                    .select('*, users:user_id(*)')
-                    .eq('review_id', reviewId);
-                if (ratingsError) {
-                    console.error(ratingsError);
-                    res.status(500).json({ message: 'Internal server error', code: 500 });
-                    return;
-                }
-                const ratingScores = ratings.map((rating) => rating.value);
-                const ratingUsers = ratings.map((rating) => rating.user_id);
-                const avgRating = ratingScores.reduce((acc, curr) => acc + curr, 0) / ratingScores.length;
-                review.rating = {
-                    avgRating: avgRating,
-                    ratingUsers: ratingUsers
-                };
                 const { data: likes, error: likesError } = yield supabase_1.supabase
                     .from('likes')
                     .select('user_id')
@@ -137,7 +97,6 @@ class reviewController {
                     return;
                 }
                 const usersLiked = likes.map(like => like.user_id);
-                console.log("usersLiked: ", usersLiked);
                 review.likes = usersLiked;
                 res.status(200).json({ message: 'Review', data: Object.assign({}, review), code: 200 });
             }
@@ -252,57 +211,39 @@ class reviewController {
                 }
                 for (let i = 0; i < reviews.length; i++) {
                     const review = reviews[i];
-                    const { data: tags, error: tagsError } = yield supabase_1.supabase
-                        .from('review_tags')
-                        .select('tag_id')
-                        .eq('review_id', review.id);
-                    if (tagsError) {
-                        console.error(tagsError);
-                        res.status(500).json({ message: 'Internal server error', code: 500 });
-                        return;
-                    }
-                    const tagIds = tags.map((tag) => tag.tag_id);
-                    const { data: tagData, error: tagDataError } = yield supabase_1.supabase
-                        .from('tags')
-                        .select('name')
-                        .in('id', tagIds);
-                    if (tagDataError) {
-                        console.error(tagDataError);
-                        res.status(500).json({ message: 'Internal server error', code: 500 });
-                        return;
-                    }
-                    const tagNames = tagData.map((tag) => tag.name);
-                    review.tags = tagNames;
-                    const { data: ratings, error: ratingsError } = yield supabase_1.supabase
-                        .from('ratings')
-                        .select('*')
-                        .eq('review_id', review.id);
-                    if (ratingsError) {
-                        console.error(ratingsError);
-                        res.status(500).json({ message: 'Internal server error', code: 500 });
-                        return;
-                    }
-                    const ratingScores = ratings.map((rating) => rating.value);
-                    const ratingUsers = ratings.map((rating) => rating.user_id);
-                    const avgRating = ratingScores.reduce((acc, curr) => acc + curr, 0) / ratingScores.length;
-                    if (!review.rating) {
-                        review.rating = {};
-                    }
-                    review.rating.avgRating = avgRating;
-                    review.rating.ratingUsers = ratingUsers;
-                    const { data: likes, error: likesError } = yield supabase_1.supabase
-                        .from('likes')
-                        .select('user_id')
-                        .eq('review_id', review.id);
-                    if (likesError) {
-                        console.error(likesError);
-                        res.status(500).json({ message: 'Internal server error', code: 500 });
-                        return;
-                    }
-                    const likeUsers = likes.map((like) => like.user_id);
-                    review.likes = likeUsers;
+                    const likedUserIds = yield (0, getUsersByLikes_1.getUsersByLikes)(review.id);
+                    const ratedUserIds = yield (0, getUsersByRatings_1.getUsersByRatings)(review.id);
+                    review.likes = likedUserIds;
+                    review.ratings = ratedUserIds;
                 }
                 res.status(200).json({ message: 'Last three reviews', data: reviews, code: 200 });
+            }
+            catch (e) {
+                console.log(e);
+                return res.status(500).send({ message: 'Internal server error' });
+            }
+        });
+    }
+    getPopularReviews(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { data: rev, error: reviewsError } = yield supabase_1.supabase
+                    .from('reviews')
+                    .select('*');
+                if (reviewsError) {
+                    console.error(reviewsError);
+                    res.status(500).json({ message: 'Internal server error', code: 500 });
+                    return;
+                }
+                const reviews = rev.sort((a, b) => b.avgRating - a.avgRating).slice(0, 3);
+                for (let i = 0; i < reviews.length; i++) {
+                    const review = reviews[i];
+                    const likedUserIds = yield (0, getUsersByLikes_1.getUsersByLikes)(review.id);
+                    const ratedUserIds = yield (0, getUsersByRatings_1.getUsersByRatings)(review.id);
+                    review.likes = likedUserIds;
+                    review.ratings = ratedUserIds;
+                }
+                res.status(200).json({ message: 'Most popular three reviews', data: reviews, code: 200 });
             }
             catch (e) {
                 console.log(e);
@@ -515,16 +456,58 @@ class reviewController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { userId, reviewId, value } = req.body;
-                const { data, error } = yield supabase_1.supabase
+                const { data: existingRating, error: existingRatingError } = yield supabase_1.supabase
                     .from('ratings')
-                    .insert({ value, review_id: reviewId, user_id: userId });
-                if (error) {
-                    throw error;
+                    .select('id, value')
+                    .eq('review_id', reviewId)
+                    .eq('user_id', userId)
+                    .single();
+                if (existingRating) {
+                    const { data: updatedRating, error: updatedRatingError } = yield supabase_1.supabase
+                        .from('ratings')
+                        .update({ value })
+                        .eq('id', existingRating.id)
+                        .single();
+                    if (updatedRatingError) {
+                        console.error(updatedRatingError);
+                        res.status(500).json({ message: 'Internal server error', code: 500 });
+                        return;
+                    }
+                }
+                else {
+                    const { data, error } = yield supabase_1.supabase
+                        .from('ratings')
+                        .insert({ value, review_id: reviewId, user_id: userId });
+                    if (error) {
+                        throw error;
+                    }
+                }
+                const { data: reviews, error: reviewsError } = yield supabase_1.supabase
+                    .from('reviews')
+                    .select('*, ratings(value)')
+                    .eq('id', reviewId);
+                if (reviewsError) {
+                    console.error(reviewsError);
+                    res.status(500).json({ message: 'Internal server error', code: 500 });
+                    return;
+                }
+                const review = reviews[0];
+                const ratingValues = review.ratings.map((rating) => rating.value);
+                const avgRating = ratingValues.reduce((acc, curr) => acc + curr, 0) / ratingValues.length;
+                const { data: updatedReview, error: updatedReviewError } = yield supabase_1.supabase
+                    .from('reviews')
+                    .update({ avg_rating: avgRating })
+                    .eq('id', reviewId)
+                    .single();
+                if (updatedReviewError) {
+                    console.error(updatedReviewError);
+                    res.status(500).json({ message: 'Internal server error', code: 500 });
+                    return;
                 }
                 res.status(200).json({ message: 'Set rating', code: 200 });
             }
             catch (e) {
-                console.log(e);
+                console.error(e);
                 res.status(400).json({ message: 'Logout error', code: 400 });
             }
         });
@@ -533,8 +516,6 @@ class reviewController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { userId, reviewId } = req.body;
-                console.log(userId);
-                console.log(reviewId);
                 const { data: existingLike, error } = yield supabase_1.supabase
                     .from('likes')
                     .select('id')

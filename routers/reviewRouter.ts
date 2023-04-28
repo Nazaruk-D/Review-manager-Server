@@ -5,6 +5,7 @@ const reviewRouter = new ReviewRouter()
 const reviewEndPoints = {
     review: '/',
     getLatestReviews: '/last-reviews',
+    getPopularReviews: '/popular-reviews',
     getPopularTags: '/get-popular-tags',
     getReviews: '/get-reviews/:userId',
     reviewId: '/:reviewId',
@@ -15,6 +16,7 @@ const reviewEndPoints = {
 }
 
 reviewRouter.get(reviewEndPoints.getLatestReviews, rController.getLatestReviews)
+reviewRouter.get(reviewEndPoints.getPopularReviews, rController.getPopularReviews)
 reviewRouter.get(reviewEndPoints.getPopularTags, rController.getPopularTags)
 reviewRouter.get(reviewEndPoints.reviewId, rController.getReviewById)
 reviewRouter.get(reviewEndPoints.getReviews, rController.getUserReviews)
