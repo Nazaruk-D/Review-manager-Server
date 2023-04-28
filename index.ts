@@ -1,7 +1,6 @@
 import express from 'express'
 const cors = require('cors')
 const app = express()
-const mysql = require('mysql')
 const cookieParser = require('cookie-parser')
 const reviewRouter = require('./routers/reviewRouter')
 const usersRouter = require('./routers/usersRouter')

@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors = require('cors');
 const app = (0, express_1.default)();
-const mysql = require('mysql');
 const cookieParser = require('cookie-parser');
 const reviewRouter = require('./routers/reviewRouter');
 const usersRouter = require('./routers/usersRouter');

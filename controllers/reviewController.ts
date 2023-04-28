@@ -11,6 +11,18 @@ import {getReviewById} from "../utils/getReviewById";
 import {getLatestReviews} from "../utils/getLatestReviews";
 import {getPopularReviews} from "../utils/getPopularReviews";
 import {getPopularTags} from "../utils/getPopularTags";
+import {getExistingRating} from "../utils/getExistingRating";
+import {uploadImage} from "../utils/uploadImage";
+import {addReviewToDatabase} from "../utils/addReviewToDatabase";
+import {addTags} from "../utils/addTags";
+import {updateReview} from "../utils/updateReview";
+import {updateReviewTags} from "../utils/updateReviewTags";
+import {deleteTags} from "../utils/deleteTags";
+import {deleteRating} from "../utils/deleteRating";
+import {deleteComments} from "../utils/deleteComments";
+import {deleteLikes} from "../utils/deleteLikes";
+import {deleteReview} from "../utils/deleteReview";
+
 
 class reviewController {
     async getUserReviews(req: any, res: any) {
@@ -70,80 +82,12 @@ class reviewController {
     async deleteReviewById(req: any, res: any) {
         try {
             const reviewId = req.body.reviewId;
-            const {data: reviewTagsToDelete, error: reviewTagsError} = await supabase
-                .from('review_tags')
-                .select('*')
-                .eq('review_id', reviewId);
-            if (reviewTagsError) return res.status(500).json({
-                message: 'Error deleting review tags',
-                error: reviewTagsError
-            });
-            if (reviewTagsToDelete && reviewTagsToDelete.length > 0) {
-                const {error: deleteReviewTagsError} = await supabase
-                    .from('review_tags')
-                    .delete()
-                    .eq('review_id', reviewId);
-                if (deleteReviewTagsError) return res.status(500).json({
-                    message: 'Error deleting review tags',
-                    error: deleteReviewTagsError
-                });
-            }
+            await deleteTags(reviewId)
+            await deleteRating(reviewId)
+            await deleteComments(reviewId)
+            await deleteLikes(reviewId)
+            await deleteReview(reviewId)
 
-            const {data: ratingsToDelete, error: ratingsError} = await supabase
-                .from('ratings')
-                .select('*')
-                .eq('review_id', reviewId);
-            if (ratingsError) return res.status(500).json({message: 'Error deleting ratings', error: ratingsError});
-            if (ratingsToDelete && ratingsToDelete.length > 0) {
-                const {error: deleteRatingsError} = await supabase
-                    .from('ratings')
-                    .delete()
-                    .eq('review_id', reviewId);
-                if (deleteRatingsError) return res.status(500).json({
-                    message: 'Error deleting ratings',
-                    error: deleteRatingsError
-                });
-            }
-
-            const {data: commentsToDelete, error: commentsError} = await supabase
-                .from('comments')
-                .select('*')
-                .eq('review_id', reviewId);
-            if (commentsError) return res.status(500).json({message: 'Error deleting comments', error: commentsError});
-            if (commentsToDelete && commentsToDelete.length > 0) {
-                const {error: deleteCommentsError} = await supabase
-                    .from('comments')
-                    .delete()
-                    .eq('review_id', reviewId);
-                if (deleteCommentsError) return res.status(500).json({
-                    message: 'Error deleting comments',
-                    error: deleteCommentsError
-                });
-            }
-
-            const {data: likesToDelete, error: likesError} = await supabase
-                .from('likes')
-                .select('*')
-                .eq('review_id', reviewId);
-            if (likesError) return res.status(500).json({message: 'Error deleting likes', error: likesError});
-            if (likesToDelete && likesToDelete.length > 0) {
-                const {error: deleteLikesError} = await supabase
-                    .from('likes')
-                    .delete()
-                    .eq('review_id', reviewId);
-                if (deleteLikesError) return res.status(500).json({
-                    message: 'Error deleting likes',
-                    error: deleteLikesError
-                });
-            }
-
-            const {data: deleteReview, error: deleteReviewError} = await supabase
-                .from('reviews')
-                .delete()
-                .match({id: reviewId});
-            if (deleteReviewError) {
-                throw deleteReviewError;
-            }
             res.status(200).json({message: 'Review deletion was successful', code: 200});
         } catch (e) {
             console.log(e)
@@ -202,88 +146,14 @@ class reviewController {
                     return res.status(400).send({message: err.message});
                 }
                 const file = req.file;
-                let {author_id, title, review_title, body, category, assessment, tags, author_name} = req.body;
-                let downloadURL;
-                let newReviewId: any;
-
-                if (file) {
-                    const storageRef = ref(storage, `review-manager/${author_id}/${file.originalname}`)
-                    const metadata = {contentType: file.mimeType}
-                    const snapshot = await uploadBytesResumable(storageRef, file.buffer, metadata)
-                    downloadURL = await getDownloadURL(snapshot.ref)
-
-                    const {data, error} = await supabase
-                        .from('reviews')
-                        .insert({
-                            title,
-                            review_title,
-                            body,
-                            category,
-                            assessment,
-                            author_id,
-                            author_name,
-                            image: downloadURL
-                        })
-                        .select('id')
-                        .single();
-                    if (error) {
-                        console.log(error);
-                    }
-                    newReviewId = data!.id;
-
-                } else {
-                    const {data, error} = await supabase
-                        .from('reviews')
-                        .insert({title, review_title, body, category, assessment, author_id, author_name})
-                        .select('id')
-                        .single();
-
-                    if (error) {
-                        console.log(error);
-                        return
-                    }
-                    newReviewId = data.id;
-                }
-                if (typeof tags === 'string') {
-                    tags = tags.split(',');
-                }
-                if (tags && tags.length > 0) {
-                    const tagIds = await Promise.all(tags.map(async (tag: string) => {
-                        const {data, error} = await supabase
-                            .from('tags')
-                            .select('id')
-                            .eq('name', tag)
-                            .single();
-
-                        if (!data) {
-                            const {data, error: tagError} = await supabase
-                                .from('tags')
-                                .insert({name: tag})
-                                .select('id')
-                                .single<{ id: string }>();
-                            if (tagError) throw tagError;
-
-                            return data?.id;
-                        }
-
-                        return data.id;
-                    }));
-
-                    const reviewTagInserts = tagIds.map((tagId) => {
-                        return {review_id: newReviewId, tag_id: tagId};
-                    });
-
-                    const {error: reviewTagError} = await supabase
-                        .from('review_tags')
-                        .insert(reviewTagInserts)
-
-                    if (reviewTagError) throw reviewTagError;
-                }
-                res.status(201).json({message: 'Review added', data: req.body, code: 201});
+                const downloadURL = await uploadImage(file, req);
+                const newReviewId = await addReviewToDatabase(req, downloadURL);
+                await addTags(req.body.tags, newReviewId);
+                res.status(201).json({message: 'Review added', code: 201});
             })
         } catch (e) {
-            console.log(e)
-            res.status(400).json({message: 'Logout error', code: 400})
+            console.log(e);
+            res.status(400).json({message: 'Error when trying to add a new review', code: 400});
         }
     }
 
@@ -293,114 +163,14 @@ class reviewController {
                 if (err) {
                     return res.status(400).send({message: err.message});
                 }
-
                 const file = req.file;
-                let {
-                    author_id,
-                    reviewId,
-                    title,
-                    review_title,
-                    body,
-                    category,
-                    assessment,
-                    tags,
-                    author_name,
-                } = req.body;
+                const reviewId = req.body.reviewId;
+                const downloadURL = await uploadImage(file, req);
 
-                let downloadURL;
+                await updateReview(req, downloadURL)
+                await updateReviewTags(req.body.tags, reviewId);
 
-                if (file) {
-                    const storageRef = ref(
-                        storage,
-                        `review-manager/${author_id}/${file.originalname}`
-                    );
-                    const metadata = {contentType: file.mimeType};
-                    const snapshot = await uploadBytesResumable(
-                        storageRef,
-                        file.buffer,
-                        metadata
-                    );
-                    downloadURL = await getDownloadURL(snapshot.ref);
-                }
-
-                const {data, error} = await supabase
-                    .from('reviews')
-                    .update({
-                        title,
-                        review_title,
-                        body,
-                        category,
-                        assessment,
-                        author_id,
-                        author_name,
-                        image: downloadURL,
-                    })
-                    .eq('id', reviewId)
-                    .single();
-
-                if (error) {
-                    console.log(error);
-                    return res.status(400).json({
-                        message: 'Review update error',
-                        code: 400,
-                    });
-                }
-
-                if (typeof tags === 'string') {
-                    tags = tags.split(',');
-                }
-
-                if (tags && tags.length > 0) {
-                    const tagIds = await Promise.all(
-                        tags.map(async (tag: string) => {
-                            const {data, error} = await supabase
-                                .from('tags')
-                                .select('id')
-                                .eq('name', tag)
-                                .single();
-
-                            if (!data) {
-                                const {data, error: tagError} = await supabase
-                                    .from('tags')
-                                    .insert({name: tag})
-                                    .select('id')
-                                    .single<{ id: string }>();
-
-                                if (tagError) throw tagError;
-
-                                return data?.id;
-                            }
-
-                            return data.id;
-                        })
-                    );
-
-                    const reviewTagDeletes = await supabase
-                        .from('review_tags')
-                        .delete()
-                        .eq('review_id', reviewId);
-
-                    if (reviewTagDeletes.error) throw reviewTagDeletes.error;
-
-                    const reviewTagInserts = tagIds.map((tagId) => {
-                        return {review_id: reviewId, tag_id: tagId};
-                    });
-
-                    const {error: reviewTagError} = await supabase
-                        .from('review_tags')
-                        .insert(reviewTagInserts);
-
-                    if (reviewTagError) throw reviewTagError;
-                } else {
-                    const reviewTagDeletes = await supabase
-                        .from('review_tags')
-                        .delete()
-                        .eq('review_id', reviewId);
-
-                    if (reviewTagDeletes.error) throw reviewTagDeletes.error;
-                }
-
-                res.status(200).json({message: 'Review updated', data, code: 200});
+                res.status(200).json({message: 'Review updated', code: 200});
             });
         } catch (e) {
             console.log(e);
@@ -411,14 +181,7 @@ class reviewController {
     async setRating(req: any, res: any) {
         try {
             const {userId, reviewId, value} = req.body;
-
-            const {data: existingRating, error: existingRatingError} = await supabase
-                .from('ratings')
-                .select('id, value')
-                .eq('review_id', reviewId)
-                .eq('user_id', userId)
-                .single();
-
+            const existingRating = await getExistingRating(userId, reviewId)
             if (existingRating) {
                 const {data: updatedRating, error: updatedRatingError} = await supabase
                     .from('ratings')
