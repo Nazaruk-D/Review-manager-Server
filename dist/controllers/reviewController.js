@@ -16,6 +16,11 @@ const upload = multer({ storage: multer.memoryStorage() });
 const storage_1 = require("firebase/storage");
 const getUsersByLikes_1 = require("../utils/getUsersByLikes");
 const getUsersByRatings_1 = require("../utils/getUsersByRatings");
+const getTagsByReviewId_1 = require("../utils/getTagsByReviewId");
+const getReviewById_1 = require("../utils/getReviewById");
+const getLatestReviews_1 = require("../utils/getLatestReviews");
+const getPopularReviews_1 = require("../utils/getPopularReviews");
+const getPopularTags_1 = require("../utils/getPopularTags");
 class reviewController {
     getUserReviews(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -56,48 +61,13 @@ class reviewController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const reviewId = req.params.reviewId;
-                const { data: review, error: reviewError } = yield supabase_1.supabase
-                    .from('reviews')
-                    .select('*')
-                    .eq('id', reviewId)
-                    .single();
-                if (reviewError) {
-                    console.error(reviewError);
-                    res.status(500).json({ message: 'Internal server error', code: 500 });
-                    return;
-                }
-                const { data: tags, error: tagsError } = yield supabase_1.supabase
-                    .from('review_tags')
-                    .select('tag_id')
-                    .eq('review_id', reviewId);
-                if (tagsError) {
-                    console.error(tagsError);
-                    res.status(500).json({ message: 'Internal server error', code: 500 });
-                    return;
-                }
-                const tagIds = tags.map((tag) => tag.tag_id);
-                const { data: tagData, error: tagDataError } = yield supabase_1.supabase
-                    .from('tags')
-                    .select('name')
-                    .in('id', tagIds);
-                if (tagDataError) {
-                    console.error(tagDataError);
-                    res.status(500).json({ message: 'Internal server error', code: 500 });
-                    return;
-                }
-                const tagNames = tagData.map((tag) => tag.name);
+                const review = yield (0, getReviewById_1.getReviewById)(reviewId);
+                const tagNames = yield (0, getTagsByReviewId_1.getTagsByReviewId)(review.id);
+                const likedUserIds = yield (0, getUsersByLikes_1.getUsersByLikes)(review.id);
+                const ratedUserIds = yield (0, getUsersByRatings_1.getUsersByRatings)(review.id);
                 review.tags = tagNames;
-                const { data: likes, error: likesError } = yield supabase_1.supabase
-                    .from('likes')
-                    .select('user_id')
-                    .eq('review_id', review.id);
-                if (likesError) {
-                    console.error(likesError);
-                    res.status(500).json({ message: 'Internal server error', code: 500 });
-                    return;
-                }
-                const usersLiked = likes.map(like => like.user_id);
-                review.likes = usersLiked;
+                review.likes = likedUserIds;
+                review.ratings = ratedUserIds;
                 res.status(200).json({ message: 'Review', data: Object.assign({}, review), code: 200 });
             }
             catch (e) {
@@ -199,16 +169,7 @@ class reviewController {
     getLatestReviews(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { data: reviews, error: reviewsError } = yield supabase_1.supabase
-                    .from('reviews')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(3);
-                if (reviewsError) {
-                    console.error(reviewsError);
-                    res.status(500).json({ message: 'Internal server error', code: 500 });
-                    return;
-                }
+                const reviews = yield (0, getLatestReviews_1.getLatestReviews)();
                 for (let i = 0; i < reviews.length; i++) {
                     const review = reviews[i];
                     const likedUserIds = yield (0, getUsersByLikes_1.getUsersByLikes)(review.id);
@@ -227,15 +188,7 @@ class reviewController {
     getPopularReviews(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { data: rev, error: reviewsError } = yield supabase_1.supabase
-                    .from('reviews')
-                    .select('*');
-                if (reviewsError) {
-                    console.error(reviewsError);
-                    res.status(500).json({ message: 'Internal server error', code: 500 });
-                    return;
-                }
-                const reviews = rev.sort((a, b) => b.avgRating - a.avgRating).slice(0, 3);
+                const reviews = yield (0, getPopularReviews_1.getPopularReviews)();
                 for (let i = 0; i < reviews.length; i++) {
                     const review = reviews[i];
                     const likedUserIds = yield (0, getUsersByLikes_1.getUsersByLikes)(review.id);
@@ -254,18 +207,7 @@ class reviewController {
     getPopularTags(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { data, error } = yield supabase_1.supabase.from('tags')
-                    .select('name, review_tags!inner(tag_id)');
-                if (error) {
-                    console.log("error");
-                    return [];
-                }
-                const sortData = data.sort((a, b) => {
-                    const aLength = Array.isArray(a.review_tags) ? a.review_tags.length : 0;
-                    const bLength = Array.isArray(b.review_tags) ? b.review_tags.length : 0;
-                    return bLength - aLength;
-                });
-                const popularTags = sortData.slice(0, 15).map(t => t.name);
+                const popularTags = yield (0, getPopularTags_1.getPopularTags)();
                 res.status(200).json({ message: 'Popular tags', data: popularTags, code: 200 });
             }
             catch (e) {

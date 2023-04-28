@@ -6,6 +6,11 @@ const upload = multer({storage: multer.memoryStorage()});
 import {ref, getDownloadURL, uploadBytesResumable} from "firebase/storage";
 import {getUsersByLikes} from "../utils/getUsersByLikes";
 import {getUsersByRatings} from "../utils/getUsersByRatings";
+import {getTagsByReviewId} from "../utils/getTagsByReviewId";
+import {getReviewById} from "../utils/getReviewById";
+import {getLatestReviews} from "../utils/getLatestReviews";
+import {getPopularReviews} from "../utils/getPopularReviews";
+import {getPopularTags} from "../utils/getPopularTags";
 
 class reviewController {
     async getUserReviews(req: any, res: any) {
@@ -21,6 +26,7 @@ class reviewController {
                 return;
             }
             const reviewIds = reviews.map(review => review.id);
+
             const {data: likes, error: likesError} = await supabase
                 .from('likes')
                 .select('*')
@@ -47,49 +53,13 @@ class reviewController {
     async getReviewById(req: any, res: any) {
         try {
             const reviewId = req.params.reviewId;
-            const {data: review, error: reviewError} = await supabase
-                .from('reviews')
-                .select('*')
-                .eq('id', reviewId)
-                .single();
-            if (reviewError) {
-                console.error(reviewError);
-                res.status(500).json({message: 'Internal server error', code: 500});
-                return;
-            }
-            const {data: tags, error: tagsError} = await supabase
-                .from('review_tags')
-                .select('tag_id')
-                .eq('review_id', reviewId);
-            if (tagsError) {
-                console.error(tagsError);
-                res.status(500).json({message: 'Internal server error', code: 500});
-                return;
-            }
-            const tagIds = tags.map((tag) => tag.tag_id);
-            const {data: tagData, error: tagDataError} = await supabase
-                .from('tags')
-                .select('name')
-                .in('id', tagIds);
-            if (tagDataError) {
-                console.error(tagDataError);
-                res.status(500).json({message: 'Internal server error', code: 500});
-                return;
-            }
-            const tagNames = tagData.map((tag) => tag.name);
+            const review = await getReviewById(reviewId)
+            const tagNames = await getTagsByReviewId(review.id)
+            const likedUserIds = await getUsersByLikes(review.id);
+            const ratedUserIds = await getUsersByRatings(review.id);
             review.tags = tagNames;
-            const {data: likes, error: likesError} = await supabase
-                .from('likes')
-                .select('user_id')
-                .eq('review_id', review.id);
-
-            if (likesError) {
-                console.error(likesError);
-                res.status(500).json({message: 'Internal server error', code: 500});
-                return;
-            }
-            const usersLiked = likes.map(like => like.user_id)
-            review.likes = usersLiked
+            review.likes = likedUserIds;
+            review.ratings = ratedUserIds;
             res.status(200).json({message: 'Review', data: {...review}, code: 200});
         } catch (e) {
             console.log(e)
@@ -183,16 +153,7 @@ class reviewController {
 
     async getLatestReviews(req: any, res: any) {
         try {
-            const {data: reviews, error: reviewsError} = await supabase
-                .from('reviews')
-                .select('*')
-                .order('created_at', {ascending: false})
-                .limit(3);
-            if (reviewsError) {
-                console.error(reviewsError);
-                res.status(500).json({message: 'Internal server error', code: 500});
-                return;
-            }
+            const reviews = await getLatestReviews()
             for (let i = 0; i < reviews.length; i++) {
                 const review = reviews[i];
                 const likedUserIds = await getUsersByLikes(review.id);
@@ -209,15 +170,7 @@ class reviewController {
 
     async getPopularReviews(req: any, res: any) {
         try {
-            const {data: rev, error: reviewsError} = await supabase
-                .from('reviews')
-                .select('*')
-            if (reviewsError) {
-                console.error(reviewsError);
-                res.status(500).json({message: 'Internal server error', code: 500});
-                return;
-            }
-            const reviews = rev.sort((a, b) => b.avgRating - a.avgRating).slice(0, 3);
+            const reviews = await getPopularReviews()
             for (let i = 0; i < reviews.length; i++) {
                 const review = reviews[i];
                 const likedUserIds = await getUsersByLikes(review.id);
@@ -234,20 +187,7 @@ class reviewController {
 
     async getPopularTags(req: any, res: any) {
         try {
-            const {data, error} = await supabase.from('tags')
-                .select('name, review_tags!inner(tag_id)')
-
-            if (error) {
-                console.log("error")
-                return []
-            }
-            const sortData = data.sort((a: PopularTag, b: PopularTag) => {
-                const aLength = Array.isArray(a.review_tags) ? a.review_tags.length : 0;
-                const bLength = Array.isArray(b.review_tags) ? b.review_tags.length : 0;
-                return bLength - aLength;
-            });
-            const popularTags = sortData.slice(0, 15).map(t => t.name)
-
+            const popularTags = await getPopularTags()
             res.status(200).json({message: 'Popular tags', data: popularTags, code: 200});
         } catch (e) {
             console.log(e)
@@ -576,7 +516,3 @@ class reviewController {
 
 module.exports = new reviewController()
 
-interface PopularTag {
-    name: string;
-    review_tags: ({ tag_id: any } | { tag_id: any }[]) | null;
-}
