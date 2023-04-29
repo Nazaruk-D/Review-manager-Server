@@ -19,6 +19,8 @@ import {deleteRating} from "../utils/deleteRating";
 import {deleteComments} from "../utils/deleteComments";
 import {deleteLikes} from "../utils/deleteLikes";
 import {deleteReview} from "../utils/deleteReview";
+import {getTotalLikesByUser} from "../utils/getTotalLikesByUser";
+import {addReviewMetadata} from "../utils/addReviewMetadata";
 
 
 class reviewController {
@@ -95,14 +97,8 @@ class reviewController {
     async getLatestReviews(req: any, res: any) {
         try {
             const reviews = await getLatestReviews()
-            for (let i = 0; i < reviews.length; i++) {
-                const review = reviews[i];
-                const likedUserIds = await getUsersByLikes(review.id);
-                const ratedUserIds = await getUsersByRatings(review.id);
-                review.likes = likedUserIds;
-                review.ratings = ratedUserIds;
-            }
-            res.status(200).json({message: 'Last three reviews', data: reviews, code: 200});
+            const reviewsWithMetadata = await Promise.all(reviews.map(addReviewMetadata));
+            res.status(200).json({message: 'Last three reviews', data: reviewsWithMetadata, code: 200});
         } catch (e) {
             console.log(e)
             return res.status(500).send({message: 'Internal server error'});
@@ -112,14 +108,8 @@ class reviewController {
     async getPopularReviews(req: any, res: any) {
         try {
             const reviews = await getPopularReviews()
-            for (let i = 0; i < reviews.length; i++) {
-                const review = reviews[i];
-                const likedUserIds = await getUsersByLikes(review.id);
-                const ratedUserIds = await getUsersByRatings(review.id);
-                review.likes = likedUserIds;
-                review.ratings = ratedUserIds;
-            }
-            res.status(200).json({message: 'Most popular three reviews', data: reviews, code: 200});
+            const reviewsWithMetadata = await Promise.all(reviews.map(addReviewMetadata));
+            res.status(200).json({message: 'Most popular three reviews', data: reviewsWithMetadata, code: 200});
         } catch (e) {
             console.log(e);
             return res.status(500).send({message: 'Internal server error'});

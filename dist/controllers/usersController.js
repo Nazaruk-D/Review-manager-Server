@@ -14,6 +14,7 @@ const firebase_1 = require("../utils/firebase");
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const storage_1 = require("firebase/storage");
+const fetchUserData_1 = require("../utils/fetchUserData");
 class UsersController {
     uploadProfileInfo(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -79,11 +80,7 @@ class UsersController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const userId = req.params.userId;
-                const { data: user, error: reviewError } = yield supabase_1.supabase
-                    .from('users')
-                    .select('*')
-                    .eq('id', userId)
-                    .single();
+                const user = yield (0, fetchUserData_1.fetchUserData)(userId);
                 return res.status(200).send({ message: 'Getting user data successfully', data: user, statusCode: 200 });
             }
             catch (e) {

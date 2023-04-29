@@ -3,6 +3,7 @@ import {storage} from "../utils/firebase";
 const multer = require('multer');
 const upload = multer({storage: multer.memoryStorage()});
 import {ref, getDownloadURL, uploadBytesResumable} from "firebase/storage";
+import {fetchUserData} from "../utils/fetchUserData";
 
 class UsersController {
     async uploadProfileInfo(req: { file?: any, body: { userId: string, newName?: string } }, res: any) {
@@ -66,14 +67,8 @@ class UsersController {
     async fetchUser(req: any, res: any) {
         try {
             const userId = req.params.userId;
-
-            const { data: user, error: reviewError } = await supabase
-                .from('users')
-                .select('*')
-                .eq('id', userId)
-                .single();
-
-            return res.status(200).send({message: 'Getting user data successfully', data: user, statusCode: 200});
+            const user = await fetchUserData(userId);
+            return res.status(200).send({ message: 'Getting user data successfully', data: user, statusCode: 200 });
         } catch (e) {
             console.log(e)
             return res.status(500).send({message: 'Internal server error'});

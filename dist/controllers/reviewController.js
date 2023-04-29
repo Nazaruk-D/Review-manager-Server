@@ -30,6 +30,7 @@ const deleteRating_1 = require("../utils/deleteRating");
 const deleteComments_1 = require("../utils/deleteComments");
 const deleteLikes_1 = require("../utils/deleteLikes");
 const deleteReview_1 = require("../utils/deleteReview");
+const addReviewMetadata_1 = require("../utils/addReviewMetadata");
 class reviewController {
     getUserReviews(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -106,14 +107,8 @@ class reviewController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const reviews = yield (0, getLatestReviews_1.getLatestReviews)();
-                for (let i = 0; i < reviews.length; i++) {
-                    const review = reviews[i];
-                    const likedUserIds = yield (0, getUsersByLikes_1.getUsersByLikes)(review.id);
-                    const ratedUserIds = yield (0, getUsersByRatings_1.getUsersByRatings)(review.id);
-                    review.likes = likedUserIds;
-                    review.ratings = ratedUserIds;
-                }
-                res.status(200).json({ message: 'Last three reviews', data: reviews, code: 200 });
+                const reviewsWithMetadata = yield Promise.all(reviews.map(addReviewMetadata_1.addReviewMetadata));
+                res.status(200).json({ message: 'Last three reviews', data: reviewsWithMetadata, code: 200 });
             }
             catch (e) {
                 console.log(e);
@@ -125,14 +120,8 @@ class reviewController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const reviews = yield (0, getPopularReviews_1.getPopularReviews)();
-                for (let i = 0; i < reviews.length; i++) {
-                    const review = reviews[i];
-                    const likedUserIds = yield (0, getUsersByLikes_1.getUsersByLikes)(review.id);
-                    const ratedUserIds = yield (0, getUsersByRatings_1.getUsersByRatings)(review.id);
-                    review.likes = likedUserIds;
-                    review.ratings = ratedUserIds;
-                }
-                res.status(200).json({ message: 'Most popular three reviews', data: reviews, code: 200 });
+                const reviewsWithMetadata = yield Promise.all(reviews.map(addReviewMetadata_1.addReviewMetadata));
+                res.status(200).json({ message: 'Most popular three reviews', data: reviewsWithMetadata, code: 200 });
             }
             catch (e) {
                 console.log(e);
