@@ -9,7 +9,7 @@ const app = (0, express_1.default)();
 const cookieParser = require('cookie-parser');
 const reviewRouter = require('./routers/reviewRouter');
 const usersRouter = require('./routers/usersRouter');
-const commentsRouter = require('./routers/commentsRouter');
+const itemRouter = require('./routers/itemRouter');
 const PORT = process.env.PORT || 7542;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -27,7 +27,7 @@ app.use(cors(corsOptions));
 app.use(cookieParser('secret key'));
 app.use('/review', reviewRouter);
 app.use('/user', usersRouter);
-app.use('/comment', commentsRouter);
+app.use('/item', itemRouter);
 app.get("/", (req, res) => {
     res.json({ message: "hi from Express App" });
     return console.log('Connection closed');

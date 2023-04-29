@@ -1,9 +1,6 @@
 import {supabase} from "../supabase";
-import {storage} from "../utils/firebase";
-
 const multer = require('multer');
 const upload = multer({storage: multer.memoryStorage()});
-import {ref, getDownloadURL, uploadBytesResumable} from "firebase/storage";
 import {getUsersByLikes} from "../utils/getUsersByLikes";
 import {getUsersByRatings} from "../utils/getUsersByRatings";
 import {getTagsByReviewId} from "../utils/getTagsByReviewId";

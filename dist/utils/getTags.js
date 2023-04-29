@@ -9,33 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateReview = void 0;
+exports.getTags = void 0;
 const supabase_1 = require("../supabase");
-function updateReview(req, downloadURL) {
+function getTags() {
     return __awaiter(this, void 0, void 0, function* () {
-        let { author_id, reviewId, title, review_title, body, category, assessment, author_name } = req.body;
-        const updateObject = {
-            title,
-            review_title,
-            body,
-            category,
-            assessment,
-            author_id,
-            author_name,
-        };
-        if (downloadURL) {
-            updateObject.image = downloadURL;
-        }
-        const { data, error } = yield supabase_1.supabase
-            .from('reviews')
-            .update(updateObject)
-            .eq('id', reviewId)
-            .single();
+        const { data: tags, error } = yield supabase_1.supabase
+            .from('tags')
+            .select('name');
         if (error) {
             console.error(error);
-            throw new Error('Internal server error');
+            return [];
         }
-        return data;
+        return tags.map(tag => tag.name);
     });
 }
-exports.updateReview = updateReview;
+exports.getTags = getTags;

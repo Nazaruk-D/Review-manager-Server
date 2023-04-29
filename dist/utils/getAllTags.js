@@ -9,33 +9,24 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateReview = void 0;
+exports.getPopularTags = void 0;
 const supabase_1 = require("../supabase");
-function updateReview(req, downloadURL) {
+function getPopularTags() {
     return __awaiter(this, void 0, void 0, function* () {
-        let { author_id, reviewId, title, review_title, body, category, assessment, author_name } = req.body;
-        const updateObject = {
-            title,
-            review_title,
-            body,
-            category,
-            assessment,
-            author_id,
-            author_name,
-        };
-        if (downloadURL) {
-            updateObject.image = downloadURL;
+        const { data: tags, error: reviewsError } = yield supabase_1.supabase
+            .from('tags')
+            .select('name, review_tags!inner(tag_id)');
+        if (reviewsError) {
+            console.error(reviewsError);
+            return [];
         }
-        const { data, error } = yield supabase_1.supabase
-            .from('reviews')
-            .update(updateObject)
-            .eq('id', reviewId)
-            .single();
-        if (error) {
-            console.error(error);
-            throw new Error('Internal server error');
-        }
-        return data;
+        const sortData = tags.sort((a, b) => {
+            const aLength = Array.isArray(a.review_tags) ? a.review_tags.length : 0;
+            const bLength = Array.isArray(b.review_tags) ? b.review_tags.length : 0;
+            return bLength - aLength;
+        });
+        const popularTags = sortData.slice(0, 15).map(t => t.name);
+        return popularTags;
     });
 }
-exports.updateReview = updateReview;
+exports.getPopularTags = getPopularTags;
