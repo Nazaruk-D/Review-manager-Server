@@ -18,7 +18,7 @@ function getTotalLikesByUser(userId) {
             console.error(error);
             return 0;
         }
-        return totalLikes;
+        return totalLikes || 0;
     });
 }
 exports.getTotalLikesByUser = getTotalLikesByUser;

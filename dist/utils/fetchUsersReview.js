@@ -9,27 +9,25 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadImage = void 0;
-const storage_1 = require("firebase/storage");
-const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() });
-const firebase_1 = require("../utils/firebase");
-function uploadImage(file, req) {
+exports.fetchUsersReview = void 0;
+const supabase_1 = require("../supabase");
+function fetchUsersReview(userId) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let downloadURL;
-            if (file) {
-                const storageRef = (0, storage_1.ref)(firebase_1.storage, `review-manager/${req.body.author_id}/${file.originalname}`);
-                const metadata = { contentType: file.mimeType };
-                const snapshot = yield (0, storage_1.uploadBytesResumable)(storageRef, file.buffer, metadata);
-                downloadURL = yield (0, storage_1.getDownloadURL)(snapshot.ref);
+            const { data: reviews, error: reviewError } = yield supabase_1.supabase
+                .from('reviews')
+                .select('*')
+                .eq('author_id', userId);
+            if (reviewError) {
+                console.error(reviewError);
+                return;
             }
-            return downloadURL;
+            return reviews || [];
         }
-        catch (_a) {
-            console.log("error");
-            return;
+        catch (error) {
+            console.error(error);
+            throw new Error('Error fetching user data');
         }
     });
 }
-exports.uploadImage = uploadImage;
+exports.fetchUsersReview = fetchUsersReview;

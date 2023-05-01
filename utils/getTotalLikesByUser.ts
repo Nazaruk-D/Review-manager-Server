@@ -7,6 +7,6 @@ export async function getTotalLikesByUser(userId: string): Promise<number> {
         return 0;
     }
 
-    return totalLikes;
+    return totalLikes || 0;
 }
 

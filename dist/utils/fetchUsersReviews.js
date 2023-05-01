@@ -9,22 +9,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.fetchUserData = void 0;
+exports.fetchUsersReviews = void 0;
 const supabase_1 = require("../supabase");
-function fetchUserData(userId) {
+function fetchUsersReviews(userId) {
     return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const { data: user, error: reviewError } = yield supabase_1.supabase
-                .from('users')
-                .select('*')
-                .eq('id', userId)
-                .single();
-            return user;
+        const { data: reviews, error: reviewError } = yield supabase_1.supabase
+            .from('reviews')
+            .select('*')
+            .eq('author_id', userId);
+        if (reviewError) {
+            console.error(reviewError);
+            return;
         }
-        catch (error) {
-            console.error(error);
-            throw new Error('Error fetching user data');
-        }
+        return reviews || [];
     });
 }
-exports.fetchUserData = fetchUserData;
+exports.fetchUsersReviews = fetchUsersReviews;

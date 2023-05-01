@@ -10,12 +10,31 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supabase_1 = require("../supabase");
-const firebase_1 = require("../utils/firebase");
+const fetchUserData_1 = require("../utils/fetchUserData");
+const getTotalLikesByUser_1 = require("../utils/getTotalLikesByUser");
+const uploadImage_1 = require("../utils/uploadImage");
+const updateUserPhoto_1 = require("../utils/updateUserPhoto");
+const updateUserName_1 = require("../utils/updateUserName");
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
-const storage_1 = require("firebase/storage");
-const fetchUserData_1 = require("../utils/fetchUserData");
 class UsersController {
+    fetchUser(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userId = req.params.userId;
+                const user = yield (0, fetchUserData_1.fetchUserData)(userId);
+                const totalLikes = yield (0, getTotalLikesByUser_1.getTotalLikesByUser)(userId);
+                if (user) {
+                    user.totalLikes = totalLikes;
+                }
+                return res.status(200).send({ message: 'Getting user data successfully', data: user, statusCode: 200 });
+            }
+            catch (e) {
+                console.log(e);
+                return res.status(500).send({ message: 'Internal server error' });
+            }
+        });
+    }
     uploadProfileInfo(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -24,31 +43,14 @@ class UsersController {
                         return res.status(400).send({ message: err.message });
                     }
                     const file = req.file;
-                    const newName = req.body.newName;
-                    const userId = req.body.userId;
-                    let downloadURL;
-                    if (file) {
-                        const storageRef = (0, storage_1.ref)(firebase_1.storage, `review-manager/${userId}/${file.originalname}`);
-                        const metadata = { contentType: file.mimeType };
-                        const snapshot = yield (0, storage_1.uploadBytesResumable)(storageRef, file.buffer, metadata);
-                        downloadURL = yield (0, storage_1.getDownloadURL)(snapshot.ref);
-                        const { data, error } = yield supabase_1.supabase
-                            .from('users')
-                            .update({ main_photo: downloadURL, small_photo: downloadURL })
-                            .match({ id: userId });
-                        if (error) {
-                            console.log(error);
-                        }
+                    const { newName, userId } = req.body;
+                    const downloadURL = yield (0, uploadImage_1.uploadImage)(file, req);
+                    if (!downloadURL || !newName) {
+                        console.log("error");
+                        return;
                     }
-                    if (newName) {
-                        const { data, error } = yield supabase_1.supabase
-                            .from('users')
-                            .update({ user_name: newName })
-                            .match({ id: userId });
-                        if (error) {
-                            console.log(error);
-                        }
-                    }
+                    yield (0, updateUserPhoto_1.updateUserPhoto)(downloadURL, userId);
+                    yield (0, updateUserName_1.updateUserName)(newName, userId);
                     return res.status(200).send({
                         message: 'Upload profile info successfully',
                         data: { url: downloadURL, newName },
@@ -69,19 +71,6 @@ class UsersController {
                     .from('users')
                     .select('*');
                 return res.status(200).send({ message: 'Getting users successfully', data: users, statusCode: 200 });
-            }
-            catch (e) {
-                console.log(e);
-                return res.status(500).send({ message: 'Internal server error' });
-            }
-        });
-    }
-    fetchUser(req, res) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const userId = req.params.userId;
-                const user = yield (0, fetchUserData_1.fetchUserData)(userId);
-                return res.status(200).send({ message: 'Getting user data successfully', data: user, statusCode: 200 });
             }
             catch (e) {
                 console.log(e);

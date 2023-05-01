@@ -1,5 +1,4 @@
 import {supabase} from "../supabase";
-import {getTotalLikesByUser} from "./getTotalLikesByUser";
 
 export async function fetchUserData(userId: string) {
     try {
@@ -9,10 +8,6 @@ export async function fetchUserData(userId: string) {
             .eq('id', userId)
             .single();
 
-        const totalLikes = await getTotalLikesByUser(userId);
-        if (user && totalLikes) {
-            user.totalLikes = totalLikes;
-        }
         return user;
     } catch (error) {
         console.error(error);

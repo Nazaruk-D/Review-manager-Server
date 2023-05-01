@@ -31,34 +31,20 @@ const deleteComments_1 = require("../utils/deleteComments");
 const deleteLikes_1 = require("../utils/deleteLikes");
 const deleteReview_1 = require("../utils/deleteReview");
 const addReviewMetadata_1 = require("../utils/addReviewMetadata");
+const fetchUsersReviews_1 = require("../utils/fetchUsersReviews");
+const fetchLikesByReviewIds_1 = require("../utils/fetchLikesByReviewIds");
 class reviewController {
     getUserReviews(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const userId = req.params.userId;
-                const { data: reviews, error: reviewError } = yield supabase_1.supabase
-                    .from('reviews')
-                    .select('*')
-                    .eq('author_id', userId);
-                if (reviewError) {
-                    console.error(reviewError);
-                    res.status(500).json({ message: 'Internal server error', code: 500 });
-                    return;
-                }
+                const reviews = yield (0, fetchUsersReviews_1.fetchUsersReviews)(userId);
                 const reviewIds = reviews.map(review => review.id);
-                const { data: likes, error: likesError } = yield supabase_1.supabase
-                    .from('likes')
-                    .select('*')
-                    .in('review_id', reviewIds);
-                if (likesError) {
-                    console.error(likesError);
-                    res.status(500).json({ message: 'Internal server error', code: 500 });
-                    return;
-                }
+                const likes = yield (0, fetchLikesByReviewIds_1.fetchLikesByReviewIds)(reviewIds);
                 const reviewsWithData = reviews.map((review) => {
                     const reviewLikes = likes.filter(like => like.review_id === review.id);
                     return Object.assign(Object.assign({}, review), { likes: reviewLikes });
-                });
+                }).reverse();
                 res.status(200).json({ message: 'Reviews', data: reviewsWithData, code: 200 });
             }
             catch (e) {

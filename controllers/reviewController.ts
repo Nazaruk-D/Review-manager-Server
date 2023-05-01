@@ -1,4 +1,5 @@
 import {supabase} from "../supabase";
+
 const multer = require('multer');
 const upload = multer({storage: multer.memoryStorage()});
 import {getUsersByLikes} from "../utils/getUsersByLikes";
@@ -21,39 +22,24 @@ import {deleteLikes} from "../utils/deleteLikes";
 import {deleteReview} from "../utils/deleteReview";
 import {getTotalLikesByUser} from "../utils/getTotalLikesByUser";
 import {addReviewMetadata} from "../utils/addReviewMetadata";
+import {fetchUsersReviews} from "../utils/fetchUsersReviews";
+import {fetchLikesByReviewIds} from "../utils/fetchLikesByReviewIds";
 
 
 class reviewController {
     async getUserReviews(req: any, res: any) {
         try {
             const userId = req.params.userId;
-            const {data: reviews, error: reviewError} = await supabase
-                .from('reviews')
-                .select('*')
-                .eq('author_id', userId);
-            if (reviewError) {
-                console.error(reviewError);
-                res.status(500).json({message: 'Internal server error', code: 500});
-                return;
-            }
-            const reviewIds = reviews.map(review => review.id);
-
-            const {data: likes, error: likesError} = await supabase
-                .from('likes')
-                .select('*')
-                .in('review_id', reviewIds);
-            if (likesError) {
-                console.error(likesError);
-                res.status(500).json({message: 'Internal server error', code: 500});
-                return;
-            }
-            const reviewsWithData = reviews.map((review) => {
-                const reviewLikes = likes.filter(like => like.review_id === review.id);
+            const reviews = await fetchUsersReviews(userId)
+            const reviewIds = reviews!.map(review => review.id);
+            const likes = await fetchLikesByReviewIds(reviewIds)
+            const reviewsWithData = reviews!.map((review) => {
+                const reviewLikes = likes!.filter(like => like.review_id === review.id);
                 return {
                     ...review,
                     likes: reviewLikes,
                 };
-            });
+            }).reverse();
             res.status(200).json({message: 'Reviews', data: reviewsWithData, code: 200});
         } catch (e) {
             console.log(e)
@@ -153,10 +139,8 @@ class reviewController {
                 const file = req.file;
                 const reviewId = req.body.reviewId;
                 const downloadURL = await uploadImage(file, req);
-
                 await updateReview(req, downloadURL)
                 await updateReviewTags(req.body.tags, reviewId);
-
                 res.status(200).json({message: 'Review updated', code: 200});
             });
         } catch (e) {
