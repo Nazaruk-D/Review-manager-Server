@@ -1,4 +1,4 @@
-import {supabase} from "../supabase";
+import {supabase} from "../supabase/supabase";
 
 export async function createComment(review_id: string, author_id: string, body: string ) {
     const { data, error } = await supabase

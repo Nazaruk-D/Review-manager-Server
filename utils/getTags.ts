@@ -1,4 +1,4 @@
-import {supabase} from "../supabase";
+import {supabase} from "../supabase/supabase";
 
 export async function getTags() {
     const {data: tags, error} = await supabase

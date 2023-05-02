@@ -1,4 +1,4 @@
-import {supabase} from "../supabase";
+import {supabase} from "../supabase/supabase";
 
 export async function getTagsByReviewId(reviewId: string) {
     const { data: tags, error: tagsError } = await supabase

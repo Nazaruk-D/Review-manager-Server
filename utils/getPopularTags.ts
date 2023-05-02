@@ -1,4 +1,4 @@
-import {supabase} from "../supabase";
+import {supabase} from "../supabase/supabase";
 
 export async function getPopularTags() {
     const {data: tags, error: reviewsError} = await supabase

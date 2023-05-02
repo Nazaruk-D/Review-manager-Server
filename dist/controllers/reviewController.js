@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const supabase_1 = require("../supabase");
+const supabase_1 = require("../supabase/supabase");
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const getUsersByLikes_1 = require("../utils/getUsersByLikes");

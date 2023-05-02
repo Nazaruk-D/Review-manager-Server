@@ -1,4 +1,4 @@
-import {supabase} from "../supabase";
+import {supabase} from "../supabase/supabase";
 
 export async function getCommentByReview(reviewId: string) {
     const { data: comments, error } = await supabase

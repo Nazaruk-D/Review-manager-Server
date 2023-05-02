@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const supabase_1 = require("../supabase");
+const supabase_1 = require("../supabase/supabase");
 const fetchUserData_1 = require("../utils/fetchUserData");
 const getTotalLikesByUser_1 = require("../utils/getTotalLikesByUser");
 const uploadImage_1 = require("../utils/uploadImage");
@@ -45,12 +45,12 @@ class UsersController {
                     const file = req.file;
                     const { newName, userId } = req.body;
                     const downloadURL = yield (0, uploadImage_1.uploadImage)(file, req);
-                    if (!downloadURL || !newName) {
-                        console.log("error");
-                        return;
+                    if (downloadURL) {
+                        yield (0, updateUserPhoto_1.updateUserPhoto)(downloadURL, userId);
                     }
-                    yield (0, updateUserPhoto_1.updateUserPhoto)(downloadURL, userId);
-                    yield (0, updateUserName_1.updateUserName)(newName, userId);
+                    if (newName) {
+                        yield (0, updateUserName_1.updateUserName)(newName, userId);
+                    }
                     return res.status(200).send({
                         message: 'Upload profile info successfully',
                         data: { url: downloadURL, newName },

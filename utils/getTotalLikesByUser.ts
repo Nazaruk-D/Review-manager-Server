@@ -1,4 +1,4 @@
-import {supabase} from "../supabase";
+import {supabase} from "../supabase/supabase";
 
 export async function getTotalLikesByUser(userId: string): Promise<number> {
     const { data: totalLikes, error } = await supabase.rpc('count_likes_by_user', { p_user_id: userId });

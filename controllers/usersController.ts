@@ -1,4 +1,4 @@
-import {supabase} from "../supabase";
+import {supabase} from "../supabase/supabase";
 import {fetchUserData} from "../utils/fetchUserData";
 import {getTotalLikesByUser} from "../utils/getTotalLikesByUser";
 import {uploadImage} from "../utils/uploadImage";
@@ -34,13 +34,12 @@ class UsersController {
                 const file = req.file;
                 const {newName, userId} = req.body;
                 const downloadURL = await uploadImage(file, req)
-
-                if(!downloadURL || !newName) {
-                    console.log("error")
-                    return
+                if (downloadURL) {
+                    await updateUserPhoto(downloadURL, userId)
                 }
-                await updateUserPhoto(downloadURL, userId)
-                await updateUserName(newName, userId)
+                if (newName) {
+                    await updateUserName(newName, userId)
+                }
                 return res.status(200).send({
                     message: 'Upload profile info successfully',
                     data: {url: downloadURL, newName},

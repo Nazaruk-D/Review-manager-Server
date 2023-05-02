@@ -1,4 +1,5 @@
-import {supabase} from "../supabase";
+import {supabase} from "../supabase/supabase";
+
 
 export async function updateReview(req: any, downloadURL: string | undefined) {
     let {author_id, reviewId, title, review_title, body, category, assessment, author_name} = req.body;

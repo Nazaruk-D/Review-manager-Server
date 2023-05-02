@@ -1,4 +1,4 @@
-import {supabase} from "../supabase";
+import {supabase} from "../supabase/supabase";
 
 const multer = require('multer');
 const upload = multer({storage: multer.memoryStorage()});

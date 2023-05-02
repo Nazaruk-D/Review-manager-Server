@@ -1,4 +1,4 @@
-import {supabase} from "../supabase";
+import {supabase} from "../supabase/supabase";
 
 export async function addTags(tags: string[] | string, newReviewId: any) {
     if (typeof tags === 'string') {

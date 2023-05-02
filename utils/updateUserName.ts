@@ -1,4 +1,4 @@
-import {supabase} from "../supabase";
+import {supabase} from "../supabase/supabase";
 
 export async function updateUserName(newName: string, userId: string) {
     const {data, error} = await supabase

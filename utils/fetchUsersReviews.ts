@@ -1,4 +1,4 @@
-import {supabase} from "../supabase";
+import {supabase} from "../supabase/supabase";
 
 export async function fetchUsersReviews(userId: string) {
     const {data: reviews, error: reviewError} = await supabase

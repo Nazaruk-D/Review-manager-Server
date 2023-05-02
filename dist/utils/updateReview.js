@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateReview = void 0;
-const supabase_1 = require("../supabase");
+const supabase_1 = require("../supabase/supabase");
 function updateReview(req, downloadURL) {
     return __awaiter(this, void 0, void 0, function* () {
         let { author_id, reviewId, title, review_title, body, category, assessment, author_name } = req.body;

@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getCommentByReview = void 0;
-const supabase_1 = require("../supabase");
+const supabase_1 = require("../supabase/supabase");
 function getCommentByReview(reviewId) {
     return __awaiter(this, void 0, void 0, function* () {
         const { data: comments, error } = yield supabase_1.supabase
