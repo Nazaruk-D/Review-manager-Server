@@ -12,7 +12,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const getTags_1 = require("../utils/getTags");
 const getCommentByReview_1 = require("../utils/getCommentByReview");
 const createComment_1 = require("../utils/createComment");
+const supabase_1 = require("../supabase/supabase");
+const addReviewMetadata_1 = require("../utils/addReviewMetadata");
 class ItemController {
+    getReviews(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const value = req.params.value;
+                const { data: reviews, error: reviewError } = yield supabase_1.supabase
+                    .rpc('search_reviews_tags_comments', { query_text: value });
+                const reviewsWithMetadata = yield Promise.all(reviews.map(addReviewMetadata_1.addReviewMetadata));
+                if (reviewError) {
+                    console.log(reviewError);
+                    return;
+                }
+                return res.status(200).send({
+                    message: 'Found reviews on request received successfully',
+                    data: reviewsWithMetadata,
+                    statusCode: 200
+                });
+            }
+            catch (e) {
+                console.log(e);
+                return res.status(500).send({ message: 'Internal server error' });
+            }
+        });
+    }
     getTags(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

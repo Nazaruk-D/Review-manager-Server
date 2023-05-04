@@ -3,13 +3,13 @@ const itemController = require('../controllers/itemController')
 const itemRouter = new Item()
 
 const itemEndPoints = {
-    comment: '/comment',
     getTags: '/tags',
     getComments: '/comment/:reviewId',
+    search: '/search/:value',
 }
 
 itemRouter.get(itemEndPoints.getComments, itemController.getComments)
 itemRouter.get(itemEndPoints.getTags, itemController.getTags)
-itemRouter.post(itemEndPoints.comment, itemController.createComment)
+itemRouter.get(itemEndPoints.search, itemController.getReviews)
 
 module.exports = itemRouter
