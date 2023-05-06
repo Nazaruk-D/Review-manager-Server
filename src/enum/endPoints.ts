@@ -8,6 +8,7 @@ export enum EndPoints {
     getUser = '/get-user/:userId',
     changeAdminStatus = '/change-role',
     changeIsBlockedStatus = '/change-status',
+    deleteUser = '/delete-user/:userId',
     review = '/',
     getLatestReviews = '/last-reviews',
     getPopularReviews = '/popular-reviews',

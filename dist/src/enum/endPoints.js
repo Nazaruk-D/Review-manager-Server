@@ -12,6 +12,7 @@ var EndPoints;
     EndPoints["getUser"] = "/get-user/:userId";
     EndPoints["changeAdminStatus"] = "/change-role";
     EndPoints["changeIsBlockedStatus"] = "/change-status";
+    EndPoints["deleteUser"] = "/delete-user/:userId";
     EndPoints["review"] = "/";
     EndPoints["getLatestReviews"] = "/last-reviews";
     EndPoints["getPopularReviews"] = "/popular-reviews";

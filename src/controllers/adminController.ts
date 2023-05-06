@@ -14,13 +14,13 @@ class AdminController {
         }
     }
 
-    async changeAdminStatus (req: any, res: any) {
+    async changeAdminStatus(req: any, res: any) {
         try {
             const {userId, role} = req.body
-            const { error } = await supabase
+            const {error} = await supabase
                 .from('users')
-                .update({ role })
-                .match({ id: userId });
+                .update({role})
+                .match({id: userId});
             if (error) {
                 console.error(error);
                 return res.status(500).send({message: 'Internal server error'});
@@ -32,18 +32,34 @@ class AdminController {
         }
     }
 
-    async changeIsBlockedStatus (req: any, res: any) {
+    async changeIsBlockedStatus(req: any, res: any) {
         try {
             const {userId, status} = req.body
-            const { error } = await supabase
+            const {error} = await supabase
                 .from('users')
-                .update({ is_blocked: status })
-                .match({ id: userId });
+                .update({is_blocked: status})
+                .match({id: userId});
             if (error) {
                 console.error(error);
                 return res.status(500).send({message: 'Internal server error'});
             }
             return res.status(200).send({message: 'User status changed', statusCode: 201});
+        } catch (e) {
+            console.log(e)
+            return res.status(500).send({message: 'Internal server error'});
+        }
+    }
+
+    async deleteUser(req: any, res: any) {
+        try {
+            const {userId} = req.params
+            const {error} = await supabase
+                .rpc('delete_user_by_id', {id: userId})
+            if (error) {
+                console.error(error);
+                return res.status(500).send({message: error.message});
+            }
+            return res.status(200).send({message: 'User deleted', statusCode: 201});
         } catch (e) {
             console.log(e)
             return res.status(500).send({message: 'Internal server error'});

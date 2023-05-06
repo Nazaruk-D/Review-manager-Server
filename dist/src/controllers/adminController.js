@@ -65,5 +65,23 @@ class AdminController {
             }
         });
     }
+    deleteUser(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { userId } = req.params;
+                const { error } = yield supabase_1.supabase
+                    .rpc('delete_user_by_id', { id: userId });
+                if (error) {
+                    console.error(error);
+                    return res.status(500).send({ message: error.message });
+                }
+                return res.status(200).send({ message: 'User deleted', statusCode: 201 });
+            }
+            catch (e) {
+                console.log(e);
+                return res.status(500).send({ message: 'Internal server error' });
+            }
+        });
+    }
 }
 module.exports = new AdminController();
