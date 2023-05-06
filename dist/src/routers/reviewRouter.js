@@ -1,0 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const endPoints_1 = require("../enum/endPoints");
+const ReviewRouter = require('express');
+const rController = require('../controllers/reviewController');
+const reviewRouter = new ReviewRouter();
+reviewRouter.get(endPoints_1.EndPoints.getLatestReviews, rController.getLatestReviews);
+reviewRouter.get(endPoints_1.EndPoints.getPopularReviews, rController.getPopularReviews);
+reviewRouter.get(endPoints_1.EndPoints.getPopularTags, rController.getPopularTags);
+reviewRouter.get(endPoints_1.EndPoints.reviewId, rController.getReviewById);
+reviewRouter.get(endPoints_1.EndPoints.getReviews, rController.getUserReviews);
+reviewRouter.post(endPoints_1.EndPoints.setRating, rController.setRating);
+reviewRouter.post(endPoints_1.EndPoints.changeLikeStatus, rController.changeLikeStatus);
+reviewRouter.post(endPoints_1.EndPoints.createReview, rController.createReview);
+reviewRouter.post(endPoints_1.EndPoints.updateReview, rController.updateReview);
+reviewRouter.delete(endPoints_1.EndPoints.review, rController.deleteReviewById);
+module.exports = reviewRouter;

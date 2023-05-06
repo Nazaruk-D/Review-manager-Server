@@ -1,7 +1,7 @@
 import {ref, getDownloadURL, uploadBytesResumable} from "firebase/storage";
 const multer = require('multer');
 const upload = multer({storage: multer.memoryStorage()});
-import {storage} from "../utils/firebase";
+import {storage} from "./firebase";
 
 export async function uploadImage(file: any, req: any) {
     try {

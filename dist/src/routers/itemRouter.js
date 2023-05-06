@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const endPoints_1 = require("../enum/endPoints");
+const Item = require('express');
+const itemController = require('../controllers/itemController');
+const itemRouter = new Item();
+itemRouter.get(endPoints_1.EndPoints.getComments, itemController.getComments);
+itemRouter.get(endPoints_1.EndPoints.getTags, itemController.getTags);
+itemRouter.get(endPoints_1.EndPoints.search, itemController.getReviews);
+module.exports = itemRouter;

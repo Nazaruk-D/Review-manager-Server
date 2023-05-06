@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const endPoints_1 = require("../enum/endPoints");
+const RouterUsers = require('express');
+const usersController = require('../controllers/usersController');
+const usersRouter = new RouterUsers();
+usersRouter.put(endPoints_1.EndPoints.uploadProfileInfo, usersController.uploadProfileInfo);
+usersRouter.get(endPoints_1.EndPoints.getUsers, usersController.fetchUsers);
+usersRouter.get(endPoints_1.EndPoints.getUser, usersController.fetchUser);
+module.exports = usersRouter;
