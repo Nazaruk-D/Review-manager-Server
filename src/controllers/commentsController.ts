@@ -1,4 +1,5 @@
 import {getCommentByReview} from "../utils/getCommentByReview";
+import {supabase} from "../supabase/supabase";
 
 class CommentsController {
       async getComments(req: any, res: any) {
@@ -15,7 +16,10 @@ class CommentsController {
     async deleteComments(req: any, res: any) {
         try {
             const commentId = req.params.commentId;
-            console.log(commentId)
+            const {error: reviewError} = await supabase
+                .from('comments')
+                .delete()
+                .match({id: commentId});
             return res.status(200).send({message: 'Remove comments successfully', statusCode: 200});
         } catch (e) {
             console.log(e)

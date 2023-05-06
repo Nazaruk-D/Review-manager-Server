@@ -9,5 +9,4 @@ export async function deleteReview(reviewId: number) {
     if (deleteReviewError) {
         throw new Error('Error deleting likes: ' + deleteReviewError.message);
     }
-
 }

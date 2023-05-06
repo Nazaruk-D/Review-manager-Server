@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const getCommentByReview_1 = require("../utils/getCommentByReview");
+const supabase_1 = require("../supabase/supabase");
 class CommentsController {
     getComments(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -28,7 +29,10 @@ class CommentsController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const commentId = req.params.commentId;
-                console.log(commentId);
+                const { error: reviewError } = yield supabase_1.supabase
+                    .from('comments')
+                    .delete()
+                    .match({ id: commentId });
                 return res.status(200).send({ message: 'Remove comments successfully', statusCode: 200 });
             }
             catch (e) {
