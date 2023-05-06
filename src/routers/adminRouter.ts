@@ -1,9 +1,11 @@
 import {EndPoints} from "../enum/endPoints";
-const Admin = require('express')
-const adminController = require('../controllers/itemController')
-const adminRouter = new Admin()
+const AdminRouter = require('express')
+const adminController = require('../controllers/adminController')
+const adminRouter = new AdminRouter()
 
 
-
+adminRouter.get(EndPoints.getUsers, adminController.fetchUsers)
+adminRouter.put(EndPoints.changeAdminStatus, adminController.changeAdminStatus)
+adminRouter.put(EndPoints.changeIsBlockedStatus, adminController.changeIsBlockedStatus)
 
 module.exports = adminRouter

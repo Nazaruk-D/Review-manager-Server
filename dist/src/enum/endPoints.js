@@ -10,6 +10,8 @@ var EndPoints;
     EndPoints["uploadProfileInfo"] = "/upload-info";
     EndPoints["getUsers"] = "/get-users";
     EndPoints["getUser"] = "/get-user/:userId";
+    EndPoints["changeAdminStatus"] = "/change-role";
+    EndPoints["changeIsBlockedStatus"] = "/change-status";
     EndPoints["review"] = "/";
     EndPoints["getLatestReviews"] = "/last-reviews";
     EndPoints["getPopularReviews"] = "/popular-reviews";

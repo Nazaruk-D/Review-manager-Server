@@ -7,6 +7,7 @@ const usersRouter = require('./src/routers/usersRouter')
 const searchRouter = require('./src/routers/searchRouter')
 const commentRouter = require('./src/routers/commentRouter')
 const tagsRouter = require('./src/routers/tagsRouter')
+const adminRouter = require('./src/routers/adminRouter')
 const PORT = process.env.PORT || 7542;
 import dotenv from 'dotenv';
 dotenv.config();
@@ -30,7 +31,7 @@ app.use('/user', usersRouter);
 app.use('/search', searchRouter);
 app.use('/comment', commentRouter);
 app.use('/tags', tagsRouter);
-app.use('/admin', tagsRouter);
+app.use('/admin', adminRouter);
 
 app.get("/", (req, res) => {
     res.json({message: "hi from Express App"})

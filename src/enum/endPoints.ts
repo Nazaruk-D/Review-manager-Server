@@ -6,6 +6,8 @@ export enum EndPoints {
     uploadProfileInfo = '/upload-info',
     getUsers = '/get-users',
     getUser = '/get-user/:userId',
+    changeAdminStatus = '/change-role',
+    changeIsBlockedStatus = '/change-status',
     review = '/',
     getLatestReviews = '/last-reviews',
     getPopularReviews = '/popular-reviews',

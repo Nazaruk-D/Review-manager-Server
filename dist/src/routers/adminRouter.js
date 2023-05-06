@@ -1,6 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const Admin = require('express');
-const adminController = require('../controllers/itemController');
-const adminRouter = new Admin();
+const endPoints_1 = require("../enum/endPoints");
+const AdminRouter = require('express');
+const adminController = require('../controllers/adminController');
+const adminRouter = new AdminRouter();
+adminRouter.get(endPoints_1.EndPoints.getUsers, adminController.fetchUsers);
+adminRouter.put(endPoints_1.EndPoints.changeAdminStatus, adminController.changeAdminStatus);
+adminRouter.put(endPoints_1.EndPoints.changeIsBlockedStatus, adminController.changeIsBlockedStatus);
 module.exports = adminRouter;
