@@ -88,8 +88,8 @@ class reviewController {
                 yield (0, deleteRating_1.deleteRating)(reviewId);
                 yield (0, deleteComments_1.deleteComments)(reviewId);
                 yield (0, deleteLikes_1.deleteLikes)(reviewId);
-                yield (0, deleteReview_1.deleteReview)(reviewId);
                 yield (0, deleteImagesByReviewId_1.deleteImagesByReviewId)(reviewId);
+                yield (0, deleteReview_1.deleteReview)(reviewId);
                 res.status(200).json({ message: 'Review deletion was successful', code: 200 });
             }
             catch (e) {

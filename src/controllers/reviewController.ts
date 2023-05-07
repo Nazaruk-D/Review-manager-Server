@@ -80,9 +80,8 @@ class reviewController {
             await deleteRating(reviewId)
             await deleteComments(reviewId)
             await deleteLikes(reviewId)
-            await deleteReview(reviewId)
             await deleteImagesByReviewId(reviewId)
-
+            await deleteReview(reviewId)
             res.status(200).json({message: 'Review deletion was successful', code: 200});
         } catch (e) {
             console.log(e)

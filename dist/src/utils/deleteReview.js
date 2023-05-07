@@ -13,7 +13,7 @@ exports.deleteReview = void 0;
 const supabase_1 = require("../supabase/supabase");
 function deleteReview(reviewId) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data, error: deleteReviewError } = yield supabase_1.supabase
+        const { error: deleteReviewError } = yield supabase_1.supabase
             .from('reviews')
             .delete()
             .match({ id: reviewId });
