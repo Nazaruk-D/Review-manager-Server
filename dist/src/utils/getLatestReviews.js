@@ -17,7 +17,7 @@ function getLatestReviews() {
             .from('reviews')
             .select('*')
             .order('created_at', { ascending: false })
-            .limit(3);
+            .limit(4);
         if (reviewsError) {
             console.error(reviewsError);
             throw new Error('Internal server error');
