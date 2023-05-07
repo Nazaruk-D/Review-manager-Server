@@ -1,6 +1,6 @@
 import {supabase} from "../supabase/supabase";
 
-export async function addReviewToDatabase(req: any, downloadURL: any) {
+export async function addReviewToDatabase(req: any) {
     let {author_id, title, review_title, body, category, assessment, tags, author_name} = req.body;
     const { data, error } = await supabase
         .from("reviews")
@@ -12,7 +12,6 @@ export async function addReviewToDatabase(req: any, downloadURL: any) {
             assessment,
             author_id,
             author_name,
-            image: downloadURL,
         })
         .select("id")
         .single();

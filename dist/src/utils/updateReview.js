@@ -11,7 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateReview = void 0;
 const supabase_1 = require("../supabase/supabase");
-function updateReview(req, downloadURL) {
+function updateReview(req) {
     return __awaiter(this, void 0, void 0, function* () {
         let { author_id, reviewId, title, review_title, body, category, assessment, author_name } = req.body;
         const updateObject = {
@@ -23,9 +23,6 @@ function updateReview(req, downloadURL) {
             author_id,
             author_name,
         };
-        if (downloadURL) {
-            updateObject.image = downloadURL;
-        }
         const { data, error } = yield supabase_1.supabase
             .from('reviews')
             .update(updateObject)

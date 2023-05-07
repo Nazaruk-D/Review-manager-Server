@@ -1,7 +1,7 @@
 import {supabase} from "../supabase/supabase";
 
 
-export async function updateReview(req: any, downloadURL: string | undefined) {
+export async function updateReview(req: any) {
     let {author_id, reviewId, title, review_title, body, category, assessment, author_name} = req.body;
     const updateObject: any = {
         title,
@@ -12,9 +12,6 @@ export async function updateReview(req: any, downloadURL: string | undefined) {
         author_id,
         author_name,
     };
-    if (downloadURL) {
-        updateObject.image = downloadURL;
-    }
     const {data, error} = await supabase
         .from('reviews')
         .update(updateObject)

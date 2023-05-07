@@ -9,28 +9,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addReviewToDatabase = void 0;
+exports.fetchImagesByReviewId = void 0;
 const supabase_1 = require("../supabase/supabase");
-function addReviewToDatabase(req) {
+function fetchImagesByReviewId(reviewId) {
     return __awaiter(this, void 0, void 0, function* () {
-        let { author_id, title, review_title, body, category, assessment, tags, author_name } = req.body;
-        const { data, error } = yield supabase_1.supabase
-            .from("reviews")
-            .insert({
-            title,
-            review_title,
-            body,
-            category,
-            assessment,
-            author_id,
-            author_name,
-        })
-            .select("id")
-            .single();
+        const { data: images, error } = yield supabase_1.supabase
+            .from('images')
+            .select('url')
+            .eq('review_id', reviewId);
         if (error) {
-            console.log(error);
+            console.error(error);
+            return [];
         }
-        return data.id;
+        return (images === null || images === void 0 ? void 0 : images.map(image => image.url)) || [];
     });
 }
-exports.addReviewToDatabase = addReviewToDatabase;
+exports.fetchImagesByReviewId = fetchImagesByReviewId;

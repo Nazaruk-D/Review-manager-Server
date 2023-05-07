@@ -10,8 +10,6 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supabase_1 = require("../supabase/supabase");
-const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() });
 const getUsersByLikes_1 = require("../utils/getUsersByLikes");
 const getUsersByRatings_1 = require("../utils/getUsersByRatings");
 const getTagsByReviewId_1 = require("../utils/getTagsByReviewId");
@@ -33,6 +31,12 @@ const deleteReview_1 = require("../utils/deleteReview");
 const addReviewMetadata_1 = require("../utils/addReviewMetadata");
 const fetchUsersReviews_1 = require("../utils/fetchUsersReviews");
 const fetchLikesByReviewIds_1 = require("../utils/fetchLikesByReviewIds");
+const addImageToDatabase_1 = require("../utils/addImageToDatabase");
+const fetchImagesByReviewIds_1 = require("../utils/fetchImagesByReviewIds");
+const fetchImagesByReviewId_1 = require("../utils/fetchImagesByReviewId");
+const deleteImagesByReviewId_1 = require("../utils/deleteImagesByReviewId");
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 class reviewController {
     getUserReviews(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -41,9 +45,11 @@ class reviewController {
                 const reviews = yield (0, fetchUsersReviews_1.fetchUsersReviews)(userId);
                 const reviewIds = reviews.map(review => review.id);
                 const likes = yield (0, fetchLikesByReviewIds_1.fetchLikesByReviewIds)(reviewIds);
+                const images = yield (0, fetchImagesByReviewIds_1.fetchImagesByReviewIds)(reviewIds);
                 const reviewsWithData = reviews.map((review) => {
                     const reviewLikes = likes.filter(like => like.review_id === review.id);
-                    return Object.assign(Object.assign({}, review), { likes: reviewLikes });
+                    const reviewImages = images.filter(image => image.review_id === review.id);
+                    return Object.assign(Object.assign({}, review), { likes: reviewLikes, images: reviewImages.map(image => image.url) });
                 }).reverse();
                 res.status(200).json({ message: 'Reviews', data: reviewsWithData, code: 200 });
             }
@@ -61,9 +67,11 @@ class reviewController {
                 const tagNames = yield (0, getTagsByReviewId_1.getTagsByReviewId)(review.id);
                 const likedUserIds = yield (0, getUsersByLikes_1.getUsersByLikes)(review.id);
                 const ratedUserIds = yield (0, getUsersByRatings_1.getUsersByRatings)(review.id);
+                const images = yield (0, fetchImagesByReviewId_1.fetchImagesByReviewId)(review.id);
                 review.tags = tagNames;
                 review.likes = likedUserIds;
                 review.ratings = ratedUserIds;
+                review.images = images;
                 res.status(200).json({ message: 'Review', data: Object.assign({}, review), code: 200 });
             }
             catch (e) {
@@ -81,6 +89,7 @@ class reviewController {
                 yield (0, deleteComments_1.deleteComments)(reviewId);
                 yield (0, deleteLikes_1.deleteLikes)(reviewId);
                 yield (0, deleteReview_1.deleteReview)(reviewId);
+                yield (0, deleteImagesByReviewId_1.deleteImagesByReviewId)(reviewId);
                 res.status(200).json({ message: 'Review deletion was successful', code: 200 });
             }
             catch (e) {
@@ -130,14 +139,29 @@ class reviewController {
     createReview(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                upload.single('reviewImage')(req, res, (err) => __awaiter(this, void 0, void 0, function* () {
-                    if (err) {
-                        return res.status(400).send({ message: err.message });
+                upload.array('reviewImage')(req, res, (err) => __awaiter(this, void 0, void 0, function* () {
+                    if (err instanceof multer.MulterError) {
+                        if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+                            return res.status(400).json({ message: 'Too many files' });
+                        }
+                        if (err.code === 'LIMIT_FILE_SIZE') {
+                            return res.status(400).json({ message: 'File size too large' });
+                        }
+                        if (err.code === 'INCORRECT_FILE_TYPE') {
+                            return res.status(400).json({ message: 'Incorrect file type' });
+                        }
+                        if (err.fields) {
+                            return res.status(400).json({ message: `Unexpected field: ${err.fields[0].name}` });
+                        }
                     }
-                    const file = req.file;
-                    const downloadURL = yield (0, uploadImage_1.uploadImage)(file, req);
-                    const newReviewId = yield (0, addReviewToDatabase_1.addReviewToDatabase)(req, downloadURL);
+                    if (err) {
+                        return res.status(400).json({ message: 'Unexpected error' });
+                    }
+                    const files = req.files;
+                    const downloadURLs = yield Promise.all(files.map((file) => (0, uploadImage_1.uploadImage)(file, req)));
+                    const newReviewId = yield (0, addReviewToDatabase_1.addReviewToDatabase)(req);
                     yield (0, addTags_1.addTags)(req.body.tags, newReviewId);
+                    yield (0, addImageToDatabase_1.addImageToDatabase)(downloadURLs, newReviewId);
                     res.status(201).json({ message: 'Review added', code: 201 });
                 }));
             }
@@ -150,15 +174,17 @@ class reviewController {
     updateReview(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                upload.single('reviewImage')(req, res, (err) => __awaiter(this, void 0, void 0, function* () {
+                upload.array('reviewImage')(req, res, (err) => __awaiter(this, void 0, void 0, function* () {
                     if (err) {
                         return res.status(400).send({ message: err.message });
                     }
-                    const file = req.file;
+                    const files = req.files;
                     const reviewId = req.body.reviewId;
-                    const downloadURL = yield (0, uploadImage_1.uploadImage)(file, req);
-                    yield (0, updateReview_1.updateReview)(req, downloadURL);
+                    const downloadURLs = yield Promise.all(files.map((file) => (0, uploadImage_1.uploadImage)(file, req)));
+                    yield (0, updateReview_1.updateReview)(req);
                     yield (0, updateReviewTags_1.updateReviewTags)(req.body.tags, reviewId);
+                    yield (0, deleteImagesByReviewId_1.deleteImagesByReviewId)(reviewId);
+                    yield (0, addImageToDatabase_1.addImageToDatabase)(downloadURLs, reviewId);
                     res.status(200).json({ message: 'Review updated', code: 200 });
                 }));
             }

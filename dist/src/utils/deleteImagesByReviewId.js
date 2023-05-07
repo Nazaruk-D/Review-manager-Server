@@ -9,28 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addReviewToDatabase = void 0;
+exports.deleteImagesByReviewId = void 0;
 const supabase_1 = require("../supabase/supabase");
-function addReviewToDatabase(req) {
+function deleteImagesByReviewId(reviewId) {
     return __awaiter(this, void 0, void 0, function* () {
-        let { author_id, title, review_title, body, category, assessment, tags, author_name } = req.body;
-        const { data, error } = yield supabase_1.supabase
-            .from("reviews")
-            .insert({
-            title,
-            review_title,
-            body,
-            category,
-            assessment,
-            author_id,
-            author_name,
-        })
-            .select("id")
-            .single();
+        const { error } = yield supabase_1.supabase.from("images").delete().eq("review_id", reviewId);
         if (error) {
-            console.log(error);
+            console.error(error);
+            throw error;
         }
-        return data.id;
+        console.log(`Images for review ${reviewId} have been deleted`);
     });
 }
-exports.addReviewToDatabase = addReviewToDatabase;
+exports.deleteImagesByReviewId = deleteImagesByReviewId;
