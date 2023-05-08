@@ -13,14 +13,14 @@ exports.getTags = void 0;
 const supabase_1 = require("../supabase/supabase");
 function getTags() {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data: tags, error } = yield supabase_1.supabase
+        const { data: tags, error: reviewsError } = yield supabase_1.supabase
             .from('tags')
-            .select('name');
-        if (error) {
-            console.error(error);
+            .select('name, total_mentions');
+        if (reviewsError) {
+            console.error(reviewsError);
             return [];
         }
-        return tags.map(tag => tag.name);
+        return tags;
     });
 }
 exports.getTags = getTags;

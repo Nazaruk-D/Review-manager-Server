@@ -15,13 +15,14 @@ function getPopularReviews() {
     return __awaiter(this, void 0, void 0, function* () {
         const { data: reviews, error: reviewsError } = yield supabase_1.supabase
             .from('reviews')
-            .select('*');
+            .select('*')
+            .order('avg_rating', { ascending: false })
+            .limit(4);
         if (reviewsError) {
             console.error(reviewsError);
             throw new Error('Internal server error');
         }
-        const sortReviews = reviews.sort((a, b) => b.avgRating - a.avgRating).slice(0, 4);
-        return sortReviews;
+        return reviews;
     });
 }
 exports.getPopularReviews = getPopularReviews;

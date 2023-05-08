@@ -1,15 +1,12 @@
 import {supabase} from "../supabase/supabase";
 
 export async function getTags() {
-    const {data: tags, error} = await supabase
+    const {data: tags, error: reviewsError} = await supabase
         .from('tags')
-        .select('name')
-
-    if (error) {
-        console.error(error);
+        .select('name, total_mentions')
+    if (reviewsError) {
+        console.error(reviewsError);
         return []
     }
-
-    return tags.map( tag => tag.name);
+    return tags;
 }
-

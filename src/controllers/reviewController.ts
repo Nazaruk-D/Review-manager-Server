@@ -5,7 +5,7 @@ import {getTagsByReviewId} from "../utils/getTagsByReviewId";
 import {getReviewById} from "../utils/getReviewById";
 import {getLatestReviews} from "../utils/getLatestReviews";
 import {getPopularReviews} from "../utils/getPopularReviews";
-import {getPopularTags} from "../utils/getPopularTags";
+import {getTags} from "../utils/getTags";
 import {getExistingRating} from "../utils/getExistingRating";
 import {uploadImage} from "../utils/uploadImage";
 import {addReviewToDatabase} from "../utils/addReviewToDatabase";
@@ -113,7 +113,7 @@ class reviewController {
 
     async getPopularTags(req: any, res: any) {
         try {
-            const popularTags = await getPopularTags()
+            const popularTags = await getTags()
             res.status(200).json({message: 'Popular tags', data: popularTags, code: 200});
         } catch (e) {
             console.log(e)

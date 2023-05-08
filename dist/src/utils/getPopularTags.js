@@ -20,12 +20,14 @@ function getPopularTags() {
             console.error(reviewsError);
             return [];
         }
+        console.log("tags: ", tags);
         const sortData = tags.sort((a, b) => {
             const aLength = Array.isArray(a.review_tags) ? a.review_tags.length : 0;
             const bLength = Array.isArray(b.review_tags) ? b.review_tags.length : 0;
             return bLength - aLength;
         });
-        const popularTags = sortData.slice(0, 15).map(t => t.name);
+        const popularTags = sortData.slice(0, 15).map(t => ({ name: t.name, amount: t.review_tags }));
+        console.log("popularTags ", popularTags);
         return popularTags;
     });
 }

@@ -16,7 +16,7 @@ const getTagsByReviewId_1 = require("../utils/getTagsByReviewId");
 const getReviewById_1 = require("../utils/getReviewById");
 const getLatestReviews_1 = require("../utils/getLatestReviews");
 const getPopularReviews_1 = require("../utils/getPopularReviews");
-const getPopularTags_1 = require("../utils/getPopularTags");
+const getTags_1 = require("../utils/getTags");
 const getExistingRating_1 = require("../utils/getExistingRating");
 const uploadImage_1 = require("../utils/uploadImage");
 const addReviewToDatabase_1 = require("../utils/addReviewToDatabase");
@@ -127,7 +127,7 @@ class reviewController {
     getPopularTags(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const popularTags = yield (0, getPopularTags_1.getPopularTags)();
+                const popularTags = yield (0, getTags_1.getTags)();
                 res.status(200).json({ message: 'Popular tags', data: popularTags, code: 200 });
             }
             catch (e) {
