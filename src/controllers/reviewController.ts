@@ -124,24 +124,13 @@ class reviewController {
     async createReview(req: any, res: any) {
         try {
             upload.array('reviewImage')(req, res, async (err: any) => {
-                if (err instanceof multer.MulterError) {
-                    if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-                        return res.status(400).json({ message: 'Too many files' });
-                    }
-                    if (err.code === 'LIMIT_FILE_SIZE') {
-                        return res.status(400).json({ message: 'File size too large' });
-                    }
-                    if (err.code === 'INCORRECT_FILE_TYPE') {
-                        return res.status(400).json({ message: 'Incorrect file type' });
-                    }
-                    if (err.fields) {
-                        return res.status(400).json({ message: `Unexpected field: ${err.fields[0].name}` });
-                    }
-                }
                 if (err) {
                     return res.status(400).json({ message: 'Unexpected error' });
                 }
                 const files = req.files;
+                if (files.length > 3) {
+                    return res.status(400).send({message: "You can't attach more than 3 photos"});
+                }
                 const downloadURLs = await Promise.all(files.map((file: File) => uploadImage(file, req)));
                 const newReviewId = await addReviewToDatabase(req);
                 await addTags(req.body.tags, newReviewId);
@@ -165,8 +154,13 @@ class reviewController {
                 const downloadURLs = await Promise.all(files.map((file: File) => uploadImage(file, req)));
                 await updateReview(req)
                 await updateReviewTags(req.body.tags, reviewId);
-                await deleteImagesByReviewId(reviewId)
-                await addImageToDatabase(downloadURLs, reviewId )
+                if (files.length > 0) {
+                    await deleteImagesByReviewId(reviewId);
+                    await addImageToDatabase(downloadURLs, reviewId);
+                }
+                if (files.length > 3) {
+                    return res.status(400).send({message: "You can't attach more than 3 photos"});
+                }
                 res.status(200).json({message: 'Review updated', code: 200});
             });
         } catch (e) {

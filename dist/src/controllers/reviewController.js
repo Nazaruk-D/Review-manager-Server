@@ -140,24 +140,13 @@ class reviewController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 upload.array('reviewImage')(req, res, (err) => __awaiter(this, void 0, void 0, function* () {
-                    if (err instanceof multer.MulterError) {
-                        if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-                            return res.status(400).json({ message: 'Too many files' });
-                        }
-                        if (err.code === 'LIMIT_FILE_SIZE') {
-                            return res.status(400).json({ message: 'File size too large' });
-                        }
-                        if (err.code === 'INCORRECT_FILE_TYPE') {
-                            return res.status(400).json({ message: 'Incorrect file type' });
-                        }
-                        if (err.fields) {
-                            return res.status(400).json({ message: `Unexpected field: ${err.fields[0].name}` });
-                        }
-                    }
                     if (err) {
                         return res.status(400).json({ message: 'Unexpected error' });
                     }
                     const files = req.files;
+                    if (files.length > 3) {
+                        return res.status(400).send({ message: "You can't attach more than 3 photos" });
+                    }
                     const downloadURLs = yield Promise.all(files.map((file) => (0, uploadImage_1.uploadImage)(file, req)));
                     const newReviewId = yield (0, addReviewToDatabase_1.addReviewToDatabase)(req);
                     yield (0, addTags_1.addTags)(req.body.tags, newReviewId);
@@ -183,8 +172,13 @@ class reviewController {
                     const downloadURLs = yield Promise.all(files.map((file) => (0, uploadImage_1.uploadImage)(file, req)));
                     yield (0, updateReview_1.updateReview)(req);
                     yield (0, updateReviewTags_1.updateReviewTags)(req.body.tags, reviewId);
-                    yield (0, deleteImagesByReviewId_1.deleteImagesByReviewId)(reviewId);
-                    yield (0, addImageToDatabase_1.addImageToDatabase)(downloadURLs, reviewId);
+                    if (files.length > 0) {
+                        yield (0, deleteImagesByReviewId_1.deleteImagesByReviewId)(reviewId);
+                        yield (0, addImageToDatabase_1.addImageToDatabase)(downloadURLs, reviewId);
+                    }
+                    if (files.length > 3) {
+                        return res.status(400).send({ message: "You can't attach more than 3 photos" });
+                    }
                     res.status(200).json({ message: 'Review updated', code: 200 });
                 }));
             }
