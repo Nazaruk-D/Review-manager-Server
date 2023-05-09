@@ -9,20 +9,23 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReviewById = void 0;
+exports.fetchProductsDataByReviewId = void 0;
 const supabase_1 = require("../supabase/supabase");
-function getReviewById(reviewId) {
+function fetchProductsDataByReviewId(reviewId) {
+    var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function* () {
-        const { data: review, error: reviewError } = yield supabase_1.supabase
-            .from('reviews')
-            .select('id, author_id, body, review_title, category, avg_rating, created_at')
-            .eq('id', reviewId)
+        const { data: products, error } = yield supabase_1.supabase
+            .from('products')
+            .select('name, review_products!inner(assessment)')
+            .eq('review_products.review_id', reviewId)
             .single();
-        if (reviewError) {
-            console.error(reviewError);
-            throw new Error('Internal server error');
+        if (error) {
+            console.error(error);
+            return { title: '', assessment: 0 };
         }
-        return review;
+        const title = products === null || products === void 0 ? void 0 : products.name;
+        const assessment = (_c = (_b = (_a = products === null || products === void 0 ? void 0 : products.review_products) === null || _a === void 0 ? void 0 : _a.find(p => p.assessment)) === null || _b === void 0 ? void 0 : _b.assessment) !== null && _c !== void 0 ? _c : 0;
+        return { title, assessment };
     });
 }
-exports.getReviewById = getReviewById;
+exports.fetchProductsDataByReviewId = fetchProductsDataByReviewId;

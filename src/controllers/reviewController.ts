@@ -19,37 +19,31 @@ import {deleteLikes} from "../utils/deleteLikes";
 import {deleteReview} from "../utils/deleteReview";
 import {addReviewMetadata} from "../utils/addReviewMetadata";
 import {fetchUsersReviews} from "../utils/fetchUsersReviews";
-import {fetchLikesByReviewIds} from "../utils/fetchLikesByReviewIds";
 import {addImageToDatabase} from "../utils/addImageToDatabase";
-import {fetchImagesByReviewIds} from "../utils/fetchImagesByReviewIds";
 import {fetchImagesByReviewId} from "../utils/fetchImagesByReviewId";
 import {deleteImagesByReviewId} from "../utils/deleteImagesByReviewId";
+import {addProductName} from "../utils/addProductName";
+import {fetchReviewDataById} from "../utils/fetchReviewDataById";
+import {fetchProductsDataByReviewId} from "../utils/fetchProductsDataByReviewId";
+import {deleteReviewProductsByReviewId} from "../utils/deleteReviewProductsByReviewId";
+import {updateProductName} from "../utils/updateProductName";
 
 const multer = require('multer');
 const upload = multer({storage: multer.memoryStorage()});
 
-
 class reviewController {
+
     async getUserReviews(req: any, res: any) {
         try {
             const userId = req.params.userId;
-            const reviews = await fetchUsersReviews(userId)
-            const reviewIds = reviews!.map(review => review.id);
-            const likes = await fetchLikesByReviewIds(reviewIds)
-            const images = await fetchImagesByReviewIds(reviewIds);
-
-            const reviewsWithData = reviews!.map((review) => {
-                const reviewLikes = likes!.filter(like => like.review_id === review.id);
-                const reviewImages = images!.filter(image => image.review_id === review.id);
-                return {
-                    ...review,
-                    likes: reviewLikes,
-                    images: reviewImages.map(image => image.url),
-                };
-            }).reverse();
+            const reviews = await fetchUsersReviews(userId);
+            const reviewsWithData = await Promise.all(reviews!.map(async review => {
+                const reviewData = await fetchReviewDataById(review.id);
+                return reviewData;
+            }).reverse());
             res.status(200).json({message: 'Reviews', data: reviewsWithData, code: 200});
         } catch (e) {
-            console.log(e)
+            console.log(e);
             return res.status(500).send({message: 'Internal server error'});
         }
     }
@@ -62,6 +56,9 @@ class reviewController {
             const likedUserIds = await getUsersByLikes(review.id);
             const ratedUserIds = await getUsersByRatings(review.id);
             const images = await fetchImagesByReviewId(review.id)
+            const {title, assessment} = await fetchProductsDataByReviewId(review.id)
+            review.title = title;
+            review.assessment = assessment;
             review.tags = tagNames;
             review.likes = likedUserIds;
             review.ratings = ratedUserIds;
@@ -81,6 +78,7 @@ class reviewController {
             await deleteComments(reviewId)
             await deleteLikes(reviewId)
             await deleteImagesByReviewId(reviewId)
+            await deleteReviewProductsByReviewId(reviewId)
             await deleteReview(reviewId)
             res.status(200).json({message: 'Review deletion was successful', code: 200});
         } catch (e) {
@@ -125,7 +123,7 @@ class reviewController {
         try {
             upload.array('reviewImage')(req, res, async (err: any) => {
                 if (err) {
-                    return res.status(400).json({ message: 'Unexpected error' });
+                    return res.status(400).json({message: 'Unexpected error'});
                 }
                 const files = req.files;
                 if (files.length > 3) {
@@ -134,12 +132,13 @@ class reviewController {
                 const downloadURLs = await Promise.all(files.map((file: File) => uploadImage(file, req)));
                 const newReviewId = await addReviewToDatabase(req);
                 await addTags(req.body.tags, newReviewId);
-                await addImageToDatabase(downloadURLs, newReviewId )
-                res.status(201).json({ message: 'Review added', code: 201 });
+                await addProductName(req.body.title, req.body.assessment, newReviewId)
+                await addImageToDatabase(downloadURLs, newReviewId)
+                res.status(201).json({message: 'Review added', code: 201});
             });
         } catch (e) {
             console.log(e);
-            res.status(400).json({ message: 'Error when trying to add a new review', code: 400 });
+            res.status(400).json({message: 'Error when trying to add a new review', code: 400});
         }
     }
 
@@ -153,6 +152,7 @@ class reviewController {
                 const reviewId = req.body.reviewId;
                 const downloadURLs = await Promise.all(files.map((file: File) => uploadImage(file, req)));
                 await updateReview(req)
+                await updateProductName(req.body.title, req.body.assessment, reviewId)
                 await updateReviewTags(req.body.tags, reviewId);
                 if (files.length > 0) {
                     await deleteImagesByReviewId(reviewId);

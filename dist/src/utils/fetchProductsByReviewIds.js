@@ -9,20 +9,18 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getReviewById = void 0;
+exports.fetchProductsAndAssessmentByReviewId = void 0;
 const supabase_1 = require("../supabase/supabase");
-function getReviewById(reviewId) {
+function fetchProductsAndAssessmentByReviewId(reviewIds) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data: review, error: reviewError } = yield supabase_1.supabase
-            .from('reviews')
-            .select('id, author_id, body, review_title, category, avg_rating, created_at')
-            .eq('id', reviewId)
-            .single();
-        if (reviewError) {
-            console.error(reviewError);
-            throw new Error('Internal server error');
+        const { data: products, error } = yield supabase_1.supabase
+            .from('review_products')
+            .select('id, name, assessment')
+            .in('review_id', reviewIds);
+        if (error) {
+            throw error;
         }
-        return review;
+        return products;
     });
 }
-exports.getReviewById = getReviewById;
+exports.fetchProductsAndAssessmentByReviewId = fetchProductsAndAssessmentByReviewId;

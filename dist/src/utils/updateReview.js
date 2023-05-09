@@ -13,13 +13,11 @@ exports.updateReview = void 0;
 const supabase_1 = require("../supabase/supabase");
 function updateReview(req) {
     return __awaiter(this, void 0, void 0, function* () {
-        let { author_id, reviewId, title, review_title, body, category, assessment, author_name } = req.body;
+        let { author_id, reviewId, review_title, body, category, author_name } = req.body;
         const updateObject = {
-            title,
             review_title,
             body,
             category,
-            assessment,
             author_id,
             author_name,
         };

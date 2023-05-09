@@ -2,13 +2,11 @@ import {supabase} from "../supabase/supabase";
 
 
 export async function updateReview(req: any) {
-    let {author_id, reviewId, title, review_title, body, category, assessment, author_name} = req.body;
+    let {author_id, reviewId, review_title, body, category, author_name} = req.body;
     const updateObject: any = {
-        title,
         review_title,
         body,
         category,
-        assessment,
         author_id,
         author_name,
     };

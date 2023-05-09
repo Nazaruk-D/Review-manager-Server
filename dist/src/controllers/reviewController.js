@@ -30,11 +30,14 @@ const deleteLikes_1 = require("../utils/deleteLikes");
 const deleteReview_1 = require("../utils/deleteReview");
 const addReviewMetadata_1 = require("../utils/addReviewMetadata");
 const fetchUsersReviews_1 = require("../utils/fetchUsersReviews");
-const fetchLikesByReviewIds_1 = require("../utils/fetchLikesByReviewIds");
 const addImageToDatabase_1 = require("../utils/addImageToDatabase");
-const fetchImagesByReviewIds_1 = require("../utils/fetchImagesByReviewIds");
 const fetchImagesByReviewId_1 = require("../utils/fetchImagesByReviewId");
 const deleteImagesByReviewId_1 = require("../utils/deleteImagesByReviewId");
+const addProductName_1 = require("../utils/addProductName");
+const fetchReviewDataById_1 = require("../utils/fetchReviewDataById");
+const fetchProductsDataByReviewId_1 = require("../utils/fetchProductsDataByReviewId");
+const deleteReviewProductsByReviewId_1 = require("../utils/deleteReviewProductsByReviewId");
+const updateProductName_1 = require("../utils/updateProductName");
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 class reviewController {
@@ -43,14 +46,10 @@ class reviewController {
             try {
                 const userId = req.params.userId;
                 const reviews = yield (0, fetchUsersReviews_1.fetchUsersReviews)(userId);
-                const reviewIds = reviews.map(review => review.id);
-                const likes = yield (0, fetchLikesByReviewIds_1.fetchLikesByReviewIds)(reviewIds);
-                const images = yield (0, fetchImagesByReviewIds_1.fetchImagesByReviewIds)(reviewIds);
-                const reviewsWithData = reviews.map((review) => {
-                    const reviewLikes = likes.filter(like => like.review_id === review.id);
-                    const reviewImages = images.filter(image => image.review_id === review.id);
-                    return Object.assign(Object.assign({}, review), { likes: reviewLikes, images: reviewImages.map(image => image.url) });
-                }).reverse();
+                const reviewsWithData = yield Promise.all(reviews.map((review) => __awaiter(this, void 0, void 0, function* () {
+                    const reviewData = yield (0, fetchReviewDataById_1.fetchReviewDataById)(review.id);
+                    return reviewData;
+                })).reverse());
                 res.status(200).json({ message: 'Reviews', data: reviewsWithData, code: 200 });
             }
             catch (e) {
@@ -68,6 +67,9 @@ class reviewController {
                 const likedUserIds = yield (0, getUsersByLikes_1.getUsersByLikes)(review.id);
                 const ratedUserIds = yield (0, getUsersByRatings_1.getUsersByRatings)(review.id);
                 const images = yield (0, fetchImagesByReviewId_1.fetchImagesByReviewId)(review.id);
+                const { title, assessment } = yield (0, fetchProductsDataByReviewId_1.fetchProductsDataByReviewId)(review.id);
+                review.title = title;
+                review.assessment = assessment;
                 review.tags = tagNames;
                 review.likes = likedUserIds;
                 review.ratings = ratedUserIds;
@@ -89,6 +91,7 @@ class reviewController {
                 yield (0, deleteComments_1.deleteComments)(reviewId);
                 yield (0, deleteLikes_1.deleteLikes)(reviewId);
                 yield (0, deleteImagesByReviewId_1.deleteImagesByReviewId)(reviewId);
+                yield (0, deleteReviewProductsByReviewId_1.deleteReviewProductsByReviewId)(reviewId);
                 yield (0, deleteReview_1.deleteReview)(reviewId);
                 res.status(200).json({ message: 'Review deletion was successful', code: 200 });
             }
@@ -150,6 +153,7 @@ class reviewController {
                     const downloadURLs = yield Promise.all(files.map((file) => (0, uploadImage_1.uploadImage)(file, req)));
                     const newReviewId = yield (0, addReviewToDatabase_1.addReviewToDatabase)(req);
                     yield (0, addTags_1.addTags)(req.body.tags, newReviewId);
+                    yield (0, addProductName_1.addProductName)(req.body.title, req.body.assessment, newReviewId);
                     yield (0, addImageToDatabase_1.addImageToDatabase)(downloadURLs, newReviewId);
                     res.status(201).json({ message: 'Review added', code: 201 });
                 }));
@@ -171,6 +175,7 @@ class reviewController {
                     const reviewId = req.body.reviewId;
                     const downloadURLs = yield Promise.all(files.map((file) => (0, uploadImage_1.uploadImage)(file, req)));
                     yield (0, updateReview_1.updateReview)(req);
+                    yield (0, updateProductName_1.updateProductName)(req.body.title, req.body.assessment, reviewId);
                     yield (0, updateReviewTags_1.updateReviewTags)(req.body.tags, reviewId);
                     if (files.length > 0) {
                         yield (0, deleteImagesByReviewId_1.deleteImagesByReviewId)(reviewId);
