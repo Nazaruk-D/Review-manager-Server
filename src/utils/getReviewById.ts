@@ -13,7 +13,7 @@ export async function getReviewById(reviewId: string): Promise<Review> {
     return review;
 }
 
-interface Review {
+export interface Review {
     id: string;
     author_id: string;
     title?: string;
@@ -27,4 +27,6 @@ interface Review {
     likes?: string[];
     ratings?: string[];
     images?: string[];
+    avg_assessment?: number
+    similarReview?: Review[]
 }

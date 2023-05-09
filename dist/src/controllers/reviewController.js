@@ -39,6 +39,7 @@ const fetchProductsDataByReviewId_1 = require("../utils/fetchProductsDataByRevie
 const deleteReviewProductsByReviewId_1 = require("../utils/deleteReviewProductsByReviewId");
 const updateProductName_1 = require("../utils/updateProductName");
 const getProductNames_1 = require("../utils/getProductNames");
+const fetchSimilarReviews_1 = require("../utils/fetchSimilarReviews");
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 class reviewController {
@@ -68,13 +69,16 @@ class reviewController {
                 const likedUserIds = yield (0, getUsersByLikes_1.getUsersByLikes)(review.id);
                 const ratedUserIds = yield (0, getUsersByRatings_1.getUsersByRatings)(review.id);
                 const images = yield (0, fetchImagesByReviewId_1.fetchImagesByReviewId)(review.id);
-                const { title, assessment } = yield (0, fetchProductsDataByReviewId_1.fetchProductsDataByReviewId)(review.id);
+                const { title, assessment, product_id, avg_assessment } = yield (0, fetchProductsDataByReviewId_1.fetchProductsDataByReviewId)(review.id);
+                const similarReview = yield (0, fetchSimilarReviews_1.fetchSimilarReviews)(product_id);
                 review.title = title;
                 review.assessment = assessment;
                 review.tags = tagNames;
                 review.likes = likedUserIds;
                 review.ratings = ratedUserIds;
                 review.images = images;
+                review.avg_assessment = avg_assessment;
+                review.similarReview = similarReview.filter((review) => review.id !== reviewId);
                 res.status(200).json({ message: 'Review', data: Object.assign({}, review), code: 200 });
             }
             catch (e) {

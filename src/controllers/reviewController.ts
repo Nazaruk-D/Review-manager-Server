@@ -2,7 +2,7 @@ import {supabase} from "../supabase/supabase";
 import {getUsersByLikes} from "../utils/getUsersByLikes";
 import {getUsersByRatings} from "../utils/getUsersByRatings";
 import {getTagsByReviewId} from "../utils/getTagsByReviewId";
-import {getReviewById} from "../utils/getReviewById";
+import {getReviewById, Review} from "../utils/getReviewById";
 import {getLatestReviews} from "../utils/getLatestReviews";
 import {getPopularReviews} from "../utils/getPopularReviews";
 import {getTags} from "../utils/getTags";
@@ -28,6 +28,7 @@ import {fetchProductsDataByReviewId} from "../utils/fetchProductsDataByReviewId"
 import {deleteReviewProductsByReviewId} from "../utils/deleteReviewProductsByReviewId";
 import {updateProductName} from "../utils/updateProductName";
 import {getProductNames} from "../utils/getProductNames";
+import {fetchSimilarReviews} from "../utils/fetchSimilarReviews";
 
 const multer = require('multer');
 const upload = multer({storage: multer.memoryStorage()});
@@ -57,13 +58,16 @@ class reviewController {
             const likedUserIds = await getUsersByLikes(review.id);
             const ratedUserIds = await getUsersByRatings(review.id);
             const images = await fetchImagesByReviewId(review.id)
-            const {title, assessment} = await fetchProductsDataByReviewId(review.id)
+            const {title, assessment, product_id, avg_assessment} = await fetchProductsDataByReviewId(review.id)
+            const similarReview = await fetchSimilarReviews(product_id)
             review.title = title;
             review.assessment = assessment;
             review.tags = tagNames;
             review.likes = likedUserIds;
             review.ratings = ratedUserIds;
             review.images = images;
+            review.avg_assessment = avg_assessment
+            review.similarReview = similarReview.filter((review: Review) => review.id !== reviewId)
             res.status(200).json({message: 'Review', data: {...review}, code: 200});
         } catch (e) {
             console.log(e)
