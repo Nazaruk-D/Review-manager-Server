@@ -21,7 +21,8 @@ function addReviewMetadata(review) {
         const ratedUserIds = yield (0, getUsersByRatings_1.getUsersByRatings)(review.id);
         const totalAuthorLikes = yield (0, getTotalLikesByUser_1.getTotalLikesByUser)(review.author_id);
         const images = yield (0, fetchImagesByReviewId_1.fetchImagesByReviewId)(review.id);
-        const { title, assessment } = yield (0, fetchProductsDataByReviewId_1.fetchProductsDataByReviewId)(review.id);
+        const { title, assessment, avg_assessment } = yield (0, fetchProductsDataByReviewId_1.fetchProductsDataByReviewId)(review.id);
+        review.avg_assessment = avg_assessment;
         review.title = title;
         review.assessment = assessment;
         review.likes = likedUserIds;

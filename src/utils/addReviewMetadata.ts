@@ -9,7 +9,8 @@ export async function addReviewMetadata(review: any) {
     const ratedUserIds = await getUsersByRatings(review.id);
     const totalAuthorLikes = await getTotalLikesByUser(review.author_id);
     const images = await fetchImagesByReviewId(review.id);
-    const {title, assessment} = await fetchProductsDataByReviewId(review.id)
+    const {title, assessment, avg_assessment} = await fetchProductsDataByReviewId(review.id)
+    review.avg_assessment = avg_assessment
     review.title = title;
     review.assessment = assessment;
     review.likes = likedUserIds;
