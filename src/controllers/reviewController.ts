@@ -27,6 +27,7 @@ import {fetchReviewDataById} from "../utils/fetchReviewDataById";
 import {fetchProductsDataByReviewId} from "../utils/fetchProductsDataByReviewId";
 import {deleteReviewProductsByReviewId} from "../utils/deleteReviewProductsByReviewId";
 import {updateProductName} from "../utils/updateProductName";
+import {getProductNames} from "../utils/getProductNames";
 
 const multer = require('multer');
 const upload = multer({storage: multer.memoryStorage()});
@@ -113,6 +114,16 @@ class reviewController {
         try {
             const popularTags = await getTags()
             res.status(200).json({message: 'Popular tags', data: popularTags, code: 200});
+        } catch (e) {
+            console.log(e)
+            return res.status(500).send({message: 'Internal server error'});
+        }
+    }
+
+    async getProductNames(req: any, res: any) {
+        try {
+            const productNames = await getProductNames()
+            res.status(200).json({message: 'Product names', data: productNames, code: 200});
         } catch (e) {
             console.log(e)
             return res.status(500).send({message: 'Internal server error'});

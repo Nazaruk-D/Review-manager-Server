@@ -30,7 +30,10 @@ export async function deleteReviewProductsByReviewId(reviewId: string) {
             if (!reviews || reviews.length === 0) {
                 await supabase.from('products').delete().eq('id', productId);
             }
+
+            await supabase.rpc('update_average_assessment', {p_product_id: productId});
         }
+
     } catch (e) {
         console.error(e);
     }

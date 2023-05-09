@@ -4,6 +4,7 @@ const endPoints_1 = require("../enum/endPoints");
 const ReviewRouter = require('express');
 const rController = require('../controllers/reviewController');
 const reviewRouter = new ReviewRouter();
+reviewRouter.get(endPoints_1.EndPoints.getProductNames, rController.getProductNames);
 reviewRouter.get(endPoints_1.EndPoints.getLatestReviews, rController.getLatestReviews);
 reviewRouter.get(endPoints_1.EndPoints.getPopularReviews, rController.getPopularReviews);
 reviewRouter.get(endPoints_1.EndPoints.getPopularTags, rController.getPopularTags);

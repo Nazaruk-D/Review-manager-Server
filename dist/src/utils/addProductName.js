@@ -41,6 +41,7 @@ function addProductName(title, assessment, newReviewId) {
                 product_id: productId,
                 assessment
             });
+            yield supabase_1.supabase.rpc('update_average_assessment', { p_product_id: productId });
         }
         catch (e) {
             console.log(e);

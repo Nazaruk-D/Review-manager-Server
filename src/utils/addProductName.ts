@@ -29,6 +29,7 @@ export async function addProductName(title: string, assessment: string, newRevie
                 product_id: productId,
                 assessment
             });
+        await supabase.rpc('update_average_assessment', {p_product_id: productId});
     } catch(e) {
         console.log(e);
     }

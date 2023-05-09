@@ -3,7 +3,7 @@ const ReviewRouter = require('express')
 const rController = require('../controllers/reviewController')
 const reviewRouter = new ReviewRouter()
 
-
+reviewRouter.get(EndPoints.getProductNames, rController.getProductNames)
 reviewRouter.get(EndPoints.getLatestReviews, rController.getLatestReviews)
 reviewRouter.get(EndPoints.getPopularReviews, rController.getPopularReviews)
 reviewRouter.get(EndPoints.getPopularTags, rController.getPopularTags)

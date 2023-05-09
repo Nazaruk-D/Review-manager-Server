@@ -17,6 +17,7 @@ var EndPoints;
     EndPoints["getLatestReviews"] = "/last-reviews";
     EndPoints["getPopularReviews"] = "/popular-reviews";
     EndPoints["getPopularTags"] = "/get-popular-tags";
+    EndPoints["getProductNames"] = "/product-names";
     EndPoints["getReviews"] = "/get-reviews/:userId";
     EndPoints["reviewId"] = "/:reviewId";
     EndPoints["setRating"] = "/rating";

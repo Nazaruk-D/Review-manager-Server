@@ -37,6 +37,7 @@ function deleteReviewProductsByReviewId(reviewId) {
                 if (!reviews || reviews.length === 0) {
                     yield supabase_1.supabase.from('products').delete().eq('id', productId);
                 }
+                yield supabase_1.supabase.rpc('update_average_assessment', { p_product_id: productId });
             }
         }
         catch (e) {

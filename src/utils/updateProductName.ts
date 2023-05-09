@@ -36,8 +36,8 @@ export async function updateProductName(title: string, assessment: string, revie
             .eq('review_id', reviewId)
             .single();
 
-        await supabase
-            .from('')
+        await supabase.rpc('update_average_assessment', {p_product_id: productId});
+
     } catch (error) {
         console.error("Error in updateProductName:", error);
     }

@@ -44,8 +44,7 @@ function updateProductName(title, assessment, reviewId) {
                 .update({ product_id: productId, assessment })
                 .eq('review_id', reviewId)
                 .single();
-            yield supabase_1.supabase
-                .from('');
+            yield supabase_1.supabase.rpc('update_average_assessment', { p_product_id: productId });
         }
         catch (error) {
             console.error("Error in updateProductName:", error);

@@ -38,6 +38,7 @@ const fetchReviewDataById_1 = require("../utils/fetchReviewDataById");
 const fetchProductsDataByReviewId_1 = require("../utils/fetchProductsDataByReviewId");
 const deleteReviewProductsByReviewId_1 = require("../utils/deleteReviewProductsByReviewId");
 const updateProductName_1 = require("../utils/updateProductName");
+const getProductNames_1 = require("../utils/getProductNames");
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 class reviewController {
@@ -132,6 +133,18 @@ class reviewController {
             try {
                 const popularTags = yield (0, getTags_1.getTags)();
                 res.status(200).json({ message: 'Popular tags', data: popularTags, code: 200 });
+            }
+            catch (e) {
+                console.log(e);
+                return res.status(500).send({ message: 'Internal server error' });
+            }
+        });
+    }
+    getProductNames(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const productNames = yield (0, getProductNames_1.getProductNames)();
+                res.status(200).json({ message: 'Product names', data: productNames, code: 200 });
             }
             catch (e) {
                 console.log(e);

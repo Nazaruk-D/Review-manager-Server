@@ -13,6 +13,7 @@ export enum EndPoints {
     getLatestReviews = '/last-reviews',
     getPopularReviews = '/popular-reviews',
     getPopularTags = '/get-popular-tags',
+    getProductNames = '/product-names',
     getReviews = '/get-reviews/:userId',
     reviewId = '/:reviewId',
     setRating = '/rating',
