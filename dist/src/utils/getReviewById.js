@@ -15,7 +15,7 @@ function getReviewById(reviewId) {
     return __awaiter(this, void 0, void 0, function* () {
         const { data: review, error: reviewError } = yield supabase_1.supabase
             .from('reviews')
-            .select('id, author_id, body, review_title, category, avg_rating, created_at')
+            .select('id, author_id, body, author_name, review_title, category, avg_rating, created_at')
             .eq('id', reviewId)
             .single();
         if (reviewError) {
