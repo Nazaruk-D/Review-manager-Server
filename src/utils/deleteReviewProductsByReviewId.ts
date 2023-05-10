@@ -16,18 +16,19 @@ export async function deleteReviewProductsByReviewId(reviewId: string) {
 
         if (reviewProducts && reviewProducts.length > 0) {
             const productId = reviewProducts[0].product_id;
-            const { data: reviews, error: reviewsError } = await supabase
-                .from('reviews')
-                .select('product_name')
-                .eq('product_id', productId)
-                .limit(1);
 
-            if (reviewsError) {
-                console.error(reviewsError);
+            const { data: otherReviewProducts, error: otherReviewProductsError } = await supabase
+                .from('review_products')
+                .select('id')
+                .neq('review_id', reviewId)
+                .eq('product_id', productId);
+
+            if (otherReviewProductsError) {
+                console.error(otherReviewProductsError);
                 return;
             }
 
-            if (!reviews || reviews.length === 0) {
+            if (!otherReviewProducts || otherReviewProducts.length === 0) {
                 await supabase.from('products').delete().eq('id', productId);
             }
 

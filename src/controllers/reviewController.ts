@@ -26,7 +26,6 @@ import {addProductName} from "../utils/addProductName";
 import {fetchReviewDataById} from "../utils/fetchReviewDataById";
 import {fetchProductsDataByReviewId} from "../utils/fetchProductsDataByReviewId";
 import {deleteReviewProductsByReviewId} from "../utils/deleteReviewProductsByReviewId";
-import {updateProductName} from "../utils/updateProductName";
 import {getProductNames} from "../utils/getProductNames";
 import {fetchSimilarReviews} from "../utils/fetchSimilarReviews";
 
@@ -167,7 +166,8 @@ class reviewController {
                 const reviewId = req.body.reviewId;
                 const downloadURLs = await Promise.all(files.map((file: File) => uploadImage(file, req)));
                 await updateReview(req)
-                await updateProductName(req.body.title, req.body.assessment, reviewId)
+                await deleteReviewProductsByReviewId(reviewId)
+                await addProductName(req.body.title, req.body.assessment, reviewId)
                 await updateReviewTags(req.body.tags, reviewId);
                 if (files.length > 0) {
                     await deleteImagesByReviewId(reviewId);

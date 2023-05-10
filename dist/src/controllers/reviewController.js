@@ -37,7 +37,6 @@ const addProductName_1 = require("../utils/addProductName");
 const fetchReviewDataById_1 = require("../utils/fetchReviewDataById");
 const fetchProductsDataByReviewId_1 = require("../utils/fetchProductsDataByReviewId");
 const deleteReviewProductsByReviewId_1 = require("../utils/deleteReviewProductsByReviewId");
-const updateProductName_1 = require("../utils/updateProductName");
 const getProductNames_1 = require("../utils/getProductNames");
 const fetchSimilarReviews_1 = require("../utils/fetchSimilarReviews");
 const multer = require('multer');
@@ -192,7 +191,8 @@ class reviewController {
                     const reviewId = req.body.reviewId;
                     const downloadURLs = yield Promise.all(files.map((file) => (0, uploadImage_1.uploadImage)(file, req)));
                     yield (0, updateReview_1.updateReview)(req);
-                    yield (0, updateProductName_1.updateProductName)(req.body.title, req.body.assessment, reviewId);
+                    yield (0, deleteReviewProductsByReviewId_1.deleteReviewProductsByReviewId)(reviewId);
+                    yield (0, addProductName_1.addProductName)(req.body.title, req.body.assessment, reviewId);
                     yield (0, updateReviewTags_1.updateReviewTags)(req.body.tags, reviewId);
                     if (files.length > 0) {
                         yield (0, deleteImagesByReviewId_1.deleteImagesByReviewId)(reviewId);
