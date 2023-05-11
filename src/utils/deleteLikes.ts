@@ -1,6 +1,6 @@
 import {supabase} from "../supabase/supabase";
 
-export async function deleteLikes(reviewId: number) {
+export async function deleteLikes(reviewId: string) {
     const { data: likesToDelete, error: likesError } = await supabase
         .from('likes')
         .select('*')

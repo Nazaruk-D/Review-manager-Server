@@ -28,6 +28,7 @@ import {fetchProductsDataByReviewId} from "../utils/fetchProductsDataByReviewId"
 import {deleteReviewProductsByReviewId} from "../utils/deleteReviewProductsByReviewId";
 import {getProductNames} from "../utils/getProductNames";
 import {fetchSimilarReviews} from "../utils/fetchSimilarReviews";
+import {deleteReviewById} from "../utils/deleteReviewById";
 
 const multer = require('multer');
 const upload = multer({storage: multer.memoryStorage()});
@@ -77,13 +78,7 @@ class reviewController {
     async deleteReviewById(req: any, res: any) {
         try {
             const reviewId = req.body.reviewId;
-            await deleteTags(reviewId)
-            await deleteRating(reviewId)
-            await deleteComments(reviewId)
-            await deleteLikes(reviewId)
-            await deleteImagesByReviewId(reviewId)
-            await deleteReviewProductsByReviewId(reviewId)
-            await deleteReview(reviewId)
+            await deleteReviewById(reviewId)
             res.status(200).json({message: 'Review deletion was successful', code: 200});
         } catch (e) {
             console.log(e)

@@ -23,11 +23,6 @@ const addReviewToDatabase_1 = require("../utils/addReviewToDatabase");
 const addTags_1 = require("../utils/addTags");
 const updateReview_1 = require("../utils/updateReview");
 const updateReviewTags_1 = require("../utils/updateReviewTags");
-const deleteTags_1 = require("../utils/deleteTags");
-const deleteRating_1 = require("../utils/deleteRating");
-const deleteComments_1 = require("../utils/deleteComments");
-const deleteLikes_1 = require("../utils/deleteLikes");
-const deleteReview_1 = require("../utils/deleteReview");
 const addReviewMetadata_1 = require("../utils/addReviewMetadata");
 const fetchUsersReviews_1 = require("../utils/fetchUsersReviews");
 const addImageToDatabase_1 = require("../utils/addImageToDatabase");
@@ -39,6 +34,7 @@ const fetchProductsDataByReviewId_1 = require("../utils/fetchProductsDataByRevie
 const deleteReviewProductsByReviewId_1 = require("../utils/deleteReviewProductsByReviewId");
 const getProductNames_1 = require("../utils/getProductNames");
 const fetchSimilarReviews_1 = require("../utils/fetchSimilarReviews");
+const deleteReviewById_1 = require("../utils/deleteReviewById");
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 class reviewController {
@@ -90,13 +86,7 @@ class reviewController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const reviewId = req.body.reviewId;
-                yield (0, deleteTags_1.deleteTags)(reviewId);
-                yield (0, deleteRating_1.deleteRating)(reviewId);
-                yield (0, deleteComments_1.deleteComments)(reviewId);
-                yield (0, deleteLikes_1.deleteLikes)(reviewId);
-                yield (0, deleteImagesByReviewId_1.deleteImagesByReviewId)(reviewId);
-                yield (0, deleteReviewProductsByReviewId_1.deleteReviewProductsByReviewId)(reviewId);
-                yield (0, deleteReview_1.deleteReview)(reviewId);
+                yield (0, deleteReviewById_1.deleteReviewById)(reviewId);
                 res.status(200).json({ message: 'Review deletion was successful', code: 200 });
             }
             catch (e) {

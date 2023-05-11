@@ -1,6 +1,6 @@
 import {supabase} from "../supabase/supabase";
 
-export async function deleteReview(reviewId: number) {
+export async function deleteReview(reviewId: string) {
     const {error: deleteReviewError} = await supabase
         .from('reviews')
         .delete()

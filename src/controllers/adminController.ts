@@ -1,4 +1,5 @@
 import {supabase} from "../supabase/supabase";
+import {deleteReviewById} from "../utils/deleteReviewById";
 
 
 class AdminController {
@@ -53,19 +54,32 @@ class AdminController {
 
     async deleteUser(req: any, res: any) {
         try {
-            const {userId} = req.params
-            const {error} = await supabase
-                .rpc('delete_user_by_id', {id: userId})
-            if (error) {
-                console.error(error);
-                return res.status(500).send({message: error.message});
+            const { userId } = req.params;
+            const { data: userReviews, error: userReviewsError } = await supabase
+                .from('reviews')
+                .select('*')
+                .eq('author_id', userId);
+            if (userReviewsError) {
+                console.error(userReviewsError);
+                return res.status(500).send({ message: userReviewsError.message });
             }
-            return res.status(200).send({message: 'User deleted', statusCode: 201});
+            for (const review of userReviews) {
+                await deleteReviewById(review.id);
+            }
+
+            const { error: deleteUserError } = await supabase
+                .rpc('delete_user_by_id', { id: userId });
+            if (deleteUserError) {
+                console.error(deleteUserError);
+                return res.status(500).send({ message: deleteUserError.message });
+            }
+            return res.status(200).send({ message: 'User deleted', statusCode: 201 });
         } catch (e) {
-            console.log(e)
-            return res.status(500).send({message: 'Internal server error'});
+            console.log(e);
+            return res.status(500).send({ message: 'Internal server error' });
         }
     }
+
 }
 
 module.exports = new AdminController();

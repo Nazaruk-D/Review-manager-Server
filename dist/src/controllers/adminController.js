@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supabase_1 = require("../supabase/supabase");
+const deleteReviewById_1 = require("../utils/deleteReviewById");
 class AdminController {
     fetchUsers(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -70,11 +71,22 @@ class AdminController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { userId } = req.params;
-                const { error } = yield supabase_1.supabase
+                const { data: userReviews, error: userReviewsError } = yield supabase_1.supabase
+                    .from('reviews')
+                    .select('*')
+                    .eq('author_id', userId);
+                if (userReviewsError) {
+                    console.error(userReviewsError);
+                    return res.status(500).send({ message: userReviewsError.message });
+                }
+                for (const review of userReviews) {
+                    yield (0, deleteReviewById_1.deleteReviewById)(review.id);
+                }
+                const { error: deleteUserError } = yield supabase_1.supabase
                     .rpc('delete_user_by_id', { id: userId });
-                if (error) {
-                    console.error(error);
-                    return res.status(500).send({ message: error.message });
+                if (deleteUserError) {
+                    console.error(deleteUserError);
+                    return res.status(500).send({ message: deleteUserError.message });
                 }
                 return res.status(200).send({ message: 'User deleted', statusCode: 201 });
             }
