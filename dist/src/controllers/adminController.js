@@ -16,7 +16,8 @@ class AdminController {
             try {
                 const { data: users, error: reviewError } = yield supabase_1.supabase
                     .from('users')
-                    .select('*');
+                    .select('*')
+                    .order('created_at', { ascending: false });
                 return res.status(200).send({ message: 'Getting users successfully', data: users, statusCode: 200 });
             }
             catch (e) {

@@ -7,6 +7,7 @@ class AdminController {
             const {data: users, error: reviewError} = await supabase
                 .from('users')
                 .select('*')
+                .order('created_at', {ascending: false});
             return res.status(200).send({message: 'Getting users successfully', data: users, statusCode: 200});
         } catch (e) {
             console.log(e)
