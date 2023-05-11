@@ -33,6 +33,7 @@ class UsersController {
                 }
                 const file = req.file;
                 const {newName, userId} = req.body;
+                console.log("file: ", file)
                 const downloadURL = await uploadImage(file, req)
                 if (downloadURL) {
                     await updateUserPhoto(downloadURL, userId)

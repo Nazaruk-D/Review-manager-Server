@@ -19,7 +19,8 @@ function uploadImage(file, req) {
         try {
             let downloadURL;
             if (file) {
-                const storageRef = (0, storage_1.ref)(firebase_1.storage, `review-manager/${req.body.author_id}/${file.originalname}`);
+                const userId = req.body.author_id || req.body.userId;
+                const storageRef = (0, storage_1.ref)(firebase_1.storage, `review-manager/${userId}/${file.originalname}`);
                 const metadata = { contentType: file.mimeType };
                 const snapshot = yield (0, storage_1.uploadBytesResumable)(storageRef, file.buffer, metadata);
                 downloadURL = yield (0, storage_1.getDownloadURL)(snapshot.ref);

@@ -16,7 +16,8 @@ function updateUserPhoto(downloadURL, userId) {
         const { data, error } = yield supabase_1.supabase
             .from('users')
             .update({ main_photo: downloadURL, small_photo: downloadURL })
-            .match({ id: userId });
+            .match({ id: userId })
+            .single();
         if (error) {
             console.log(error);
             return;

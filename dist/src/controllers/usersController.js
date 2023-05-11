@@ -44,6 +44,7 @@ class UsersController {
                     }
                     const file = req.file;
                     const { newName, userId } = req.body;
+                    console.log("file: ", file);
                     const downloadURL = yield (0, uploadImage_1.uploadImage)(file, req);
                     if (downloadURL) {
                         yield (0, updateUserPhoto_1.updateUserPhoto)(downloadURL, userId);
