@@ -10,11 +10,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supabase_1 = require("../supabase/supabase");
-const fetchUserData_1 = require("../utils/fetchUserData");
-const getTotalLikesByUser_1 = require("../utils/getTotalLikesByUser");
-const uploadImage_1 = require("../utils/uploadImage");
-const updateUserPhoto_1 = require("../utils/updateUserPhoto");
-const updateUserName_1 = require("../utils/updateUserName");
+const fetchUserData_1 = require("../utils/fetch/fetchUserData");
+const uploadImage_1 = require("../utils/image/uploadImage");
+const updateUserPhoto_1 = require("../utils/update/updateUserPhoto");
+const updateUserName_1 = require("../utils/update/updateUserName");
+const fetchTotalLikesByUser_1 = require("../utils/fetch/fetchTotalLikesByUser");
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 class UsersController {
@@ -23,14 +23,13 @@ class UsersController {
             try {
                 const userId = req.params.userId;
                 const user = yield (0, fetchUserData_1.fetchUserData)(userId);
-                const totalLikes = yield (0, getTotalLikesByUser_1.getTotalLikesByUser)(userId);
+                const totalLikes = yield (0, fetchTotalLikesByUser_1.fetchTotalLikesByUser)(userId);
                 if (user) {
                     user.totalLikes = totalLikes;
                 }
                 return res.status(200).send({ message: 'Getting user data successfully', data: user, statusCode: 200 });
             }
             catch (e) {
-                console.log(e);
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -44,7 +43,6 @@ class UsersController {
                     }
                     const file = req.file;
                     const { newName, userId } = req.body;
-                    console.log("file: ", file);
                     const downloadURL = yield (0, uploadImage_1.uploadImage)(file, req);
                     if (downloadURL) {
                         yield (0, updateUserPhoto_1.updateUserPhoto)(downloadURL, userId);
@@ -60,7 +58,6 @@ class UsersController {
                 }));
             }
             catch (e) {
-                console.log(e);
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -74,7 +71,6 @@ class UsersController {
                 return res.status(200).send({ message: 'Getting users successfully', data: users, statusCode: 200 });
             }
             catch (e) {
-                console.log(e);
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });

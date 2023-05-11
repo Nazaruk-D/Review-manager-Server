@@ -10,32 +10,32 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supabase_1 = require("../supabase/supabase");
-const getUsersByLikes_1 = require("../utils/getUsersByLikes");
-const getUsersByRatings_1 = require("../utils/getUsersByRatings");
-const getTagsByReviewId_1 = require("../utils/getTagsByReviewId");
-const getReviewById_1 = require("../utils/getReviewById");
-const getLatestReviews_1 = require("../utils/getLatestReviews");
-const getPopularReviews_1 = require("../utils/getPopularReviews");
-const getTags_1 = require("../utils/getTags");
-const getExistingRating_1 = require("../utils/getExistingRating");
-const uploadImage_1 = require("../utils/uploadImage");
-const addReviewToDatabase_1 = require("../utils/addReviewToDatabase");
-const addTags_1 = require("../utils/addTags");
-const updateReview_1 = require("../utils/updateReview");
-const updateReviewTags_1 = require("../utils/updateReviewTags");
-const addReviewMetadata_1 = require("../utils/addReviewMetadata");
-const fetchUsersReviews_1 = require("../utils/fetchUsersReviews");
-const addImageToDatabase_1 = require("../utils/addImageToDatabase");
-const fetchImagesByReviewId_1 = require("../utils/fetchImagesByReviewId");
-const deleteImagesByReviewId_1 = require("../utils/deleteImagesByReviewId");
-const addProductName_1 = require("../utils/addProductName");
-const fetchReviewDataById_1 = require("../utils/fetchReviewDataById");
-const fetchProductsDataByReviewId_1 = require("../utils/fetchProductsDataByReviewId");
-const deleteReviewProductsByReviewId_1 = require("../utils/deleteReviewProductsByReviewId");
-const getProductNames_1 = require("../utils/getProductNames");
-const fetchSimilarReviews_1 = require("../utils/fetchSimilarReviews");
-const deleteReviewById_1 = require("../utils/deleteReviewById");
-const getUsernameById_1 = require("../utils/getUsernameById");
+const uploadImage_1 = require("../utils/image/uploadImage");
+const addReviewToDatabase_1 = require("../utils/add/addReviewToDatabase");
+const addTags_1 = require("../utils/add/addTags");
+const updateReview_1 = require("../utils/update/updateReview");
+const updateReviewTags_1 = require("../utils/update/updateReviewTags");
+const addReviewMetadata_1 = require("../utils/add/addReviewMetadata");
+const fetchUsersReviews_1 = require("../utils/fetch/fetchUsersReviews");
+const addImageToDatabase_1 = require("../utils/add/addImageToDatabase");
+const fetchImagesByReviewId_1 = require("../utils/fetch/fetchImagesByReviewId");
+const deleteImagesByReviewId_1 = require("../utils/delete/deleteImagesByReviewId");
+const addProductName_1 = require("../utils/add/addProductName");
+const fetchReviewDataById_1 = require("../utils/fetch/fetchReviewDataById");
+const fetchProductsDataByReviewId_1 = require("../utils/fetch/fetchProductsDataByReviewId");
+const deleteReviewProductsByReviewId_1 = require("../utils/delete/deleteReviewProductsByReviewId");
+const fetchSimilarReviews_1 = require("../utils/fetch/fetchSimilarReviews");
+const deleteReviewById_1 = require("../utils/delete/deleteReviewById");
+const fetchReviewById_1 = require("../utils/fetch/fetchReviewById");
+const fetchTagsByReviewId_1 = require("../utils/fetch/fetchTagsByReviewId");
+const fetchUsersByLikes_1 = require("../utils/fetch/fetchUsersByLikes");
+const fetchUsersByRatings_1 = require("../utils/fetch/fetchUsersByRatings");
+const fetchLatestReviews_1 = require("../utils/fetch/fetchLatestReviews");
+const fetchPopularReviews_1 = require("../utils/fetch/fetchPopularReviews");
+const fetchTags_1 = require("../utils/fetch/fetchTags");
+const fetchProductNames_1 = require("../utils/fetch/fetchProductNames");
+const fetchUsernameById_1 = require("../utils/fetch/fetchUsernameById");
+const fetchExistingRating_1 = require("../utils/fetch/fetchExistingRating");
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 class reviewController {
@@ -51,7 +51,6 @@ class reviewController {
                 res.status(200).json({ message: 'Reviews', data: reviewsWithData, code: 200 });
             }
             catch (e) {
-                console.log(e);
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -60,10 +59,10 @@ class reviewController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const reviewId = req.params.reviewId;
-                const review = yield (0, getReviewById_1.getReviewById)(reviewId);
-                const tagNames = yield (0, getTagsByReviewId_1.getTagsByReviewId)(review.id);
-                const likedUserIds = yield (0, getUsersByLikes_1.getUsersByLikes)(review.id);
-                const ratedUserIds = yield (0, getUsersByRatings_1.getUsersByRatings)(review.id);
+                const review = yield (0, fetchReviewById_1.fetchReviewById)(reviewId);
+                const tagNames = yield (0, fetchTagsByReviewId_1.fetchTagsByReviewId)(review.id);
+                const likedUserIds = yield (0, fetchUsersByLikes_1.fetchUsersByLikes)(review.id);
+                const ratedUserIds = yield (0, fetchUsersByRatings_1.fetchUsersByRatings)(review.id);
                 const images = yield (0, fetchImagesByReviewId_1.fetchImagesByReviewId)(review.id);
                 const { title, assessment, product_id, avg_assessment } = yield (0, fetchProductsDataByReviewId_1.fetchProductsDataByReviewId)(review.id);
                 const similarReview = yield (0, fetchSimilarReviews_1.fetchSimilarReviews)(product_id);
@@ -78,7 +77,6 @@ class reviewController {
                 res.status(200).json({ message: 'Review', data: Object.assign({}, review), code: 200 });
             }
             catch (e) {
-                console.log(e);
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -91,7 +89,6 @@ class reviewController {
                 res.status(200).json({ message: 'Review deletion was successful', code: 200 });
             }
             catch (e) {
-                console.log(e);
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -99,12 +96,11 @@ class reviewController {
     getLatestReviews(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const reviews = yield (0, getLatestReviews_1.getLatestReviews)();
+                const reviews = yield (0, fetchLatestReviews_1.fetchLatestReviews)();
                 const reviewsWithMetadata = yield Promise.all(reviews.map(addReviewMetadata_1.addReviewMetadata));
                 res.status(200).json({ message: 'Last three reviews', data: reviewsWithMetadata, code: 200 });
             }
             catch (e) {
-                console.log(e);
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -112,12 +108,11 @@ class reviewController {
     getPopularReviews(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const reviews = yield (0, getPopularReviews_1.getPopularReviews)();
+                const reviews = yield (0, fetchPopularReviews_1.fetchPopularReviews)();
                 const reviewsWithMetadata = yield Promise.all(reviews.map(addReviewMetadata_1.addReviewMetadata));
                 res.status(200).json({ message: 'Most popular three reviews', data: reviewsWithMetadata, code: 200 });
             }
             catch (e) {
-                console.log(e);
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -125,11 +120,10 @@ class reviewController {
     getPopularTags(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const popularTags = yield (0, getTags_1.getTags)();
+                const popularTags = yield (0, fetchTags_1.fetchTags)();
                 res.status(200).json({ message: 'Popular tags', data: popularTags, code: 200 });
             }
             catch (e) {
-                console.log(e);
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -137,11 +131,10 @@ class reviewController {
     getProductNames(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const productNames = yield (0, getProductNames_1.getProductNames)();
+                const productNames = yield (0, fetchProductNames_1.fetchProductNames)();
                 res.status(200).json({ message: 'Product names', data: productNames, code: 200 });
             }
             catch (e) {
-                console.log(e);
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -158,7 +151,7 @@ class reviewController {
                         return res.status(400).send({ message: "You can't attach more than 3 photos" });
                     }
                     const downloadURLs = yield Promise.all(files.map((file) => (0, uploadImage_1.uploadImage)(file, req)));
-                    const authorName = yield (0, getUsernameById_1.getUsernameById)(req.body.author_id);
+                    const authorName = yield (0, fetchUsernameById_1.fetchUsernameById)(req.body.author_id);
                     const newReviewId = yield (0, addReviewToDatabase_1.addReviewToDatabase)(req, authorName);
                     yield (0, addTags_1.addTags)(req.body.tags, newReviewId);
                     yield (0, addProductName_1.addProductName)(req.body.title, req.body.assessment, newReviewId);
@@ -167,8 +160,7 @@ class reviewController {
                 }));
             }
             catch (e) {
-                console.log(e);
-                res.status(400).json({ message: 'Error when trying to add a new review', code: 400 });
+                res.status(400).json({ message: 'Error to add a new review', code: 400 });
             }
         });
     }
@@ -197,7 +189,6 @@ class reviewController {
                 }));
             }
             catch (e) {
-                console.log(e);
                 res.status(400).json({ message: 'Review update error', code: 400 });
             }
         });
@@ -206,7 +197,7 @@ class reviewController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { userId, reviewId, value } = req.body;
-                const existingRating = yield (0, getExistingRating_1.getExistingRating)(userId, reviewId);
+                const existingRating = yield (0, fetchExistingRating_1.fetchExistingRating)(userId, reviewId);
                 if (existingRating) {
                     const { data: updatedRating, error: updatedRatingError } = yield supabase_1.supabase
                         .from('ratings')
@@ -252,8 +243,7 @@ class reviewController {
                 res.status(200).json({ message: 'Set rating', code: 200 });
             }
             catch (e) {
-                console.error(e);
-                res.status(400).json({ message: 'Logout error', code: 400 });
+                res.status(400).json({ message: 'Set rating error', code: 400 });
             }
         });
     }
@@ -290,8 +280,7 @@ class reviewController {
                 }
             }
             catch (e) {
-                console.log(e);
-                res.status(400).json({ message: 'Logout error', code: 400 });
+                res.status(400).json({ message: 'Change like status', code: 400 });
             }
         });
     }

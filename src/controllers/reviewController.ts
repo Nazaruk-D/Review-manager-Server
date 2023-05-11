@@ -1,42 +1,38 @@
 import {supabase} from "../supabase/supabase";
-import {getUsersByLikes} from "../utils/getUsersByLikes";
-import {getUsersByRatings} from "../utils/getUsersByRatings";
-import {getTagsByReviewId} from "../utils/getTagsByReviewId";
-import {getReviewById, Review} from "../utils/getReviewById";
-import {getLatestReviews} from "../utils/getLatestReviews";
-import {getPopularReviews} from "../utils/getPopularReviews";
-import {getTags} from "../utils/getTags";
-import {getExistingRating} from "../utils/getExistingRating";
-import {uploadImage} from "../utils/uploadImage";
-import {addReviewToDatabase} from "../utils/addReviewToDatabase";
-import {addTags} from "../utils/addTags";
-import {updateReview} from "../utils/updateReview";
-import {updateReviewTags} from "../utils/updateReviewTags";
-import {deleteTags} from "../utils/deleteTags";
-import {deleteRating} from "../utils/deleteRating";
-import {deleteComments} from "../utils/deleteComments";
-import {deleteLikes} from "../utils/deleteLikes";
-import {deleteReview} from "../utils/deleteReview";
-import {addReviewMetadata} from "../utils/addReviewMetadata";
-import {fetchUsersReviews} from "../utils/fetchUsersReviews";
-import {addImageToDatabase} from "../utils/addImageToDatabase";
-import {fetchImagesByReviewId} from "../utils/fetchImagesByReviewId";
-import {deleteImagesByReviewId} from "../utils/deleteImagesByReviewId";
-import {addProductName} from "../utils/addProductName";
-import {fetchReviewDataById} from "../utils/fetchReviewDataById";
-import {fetchProductsDataByReviewId} from "../utils/fetchProductsDataByReviewId";
-import {deleteReviewProductsByReviewId} from "../utils/deleteReviewProductsByReviewId";
-import {getProductNames} from "../utils/getProductNames";
-import {fetchSimilarReviews} from "../utils/fetchSimilarReviews";
-import {deleteReviewById} from "../utils/deleteReviewById";
-import {getUsernameById} from "../utils/getUsernameById";
+import {uploadImage} from "../utils/image/uploadImage";
+import {addReviewToDatabase} from "../utils/add/addReviewToDatabase";
+import {addTags} from "../utils/add/addTags";
+import {updateReview} from "../utils/update/updateReview";
+import {updateReviewTags} from "../utils/update/updateReviewTags";
+import {addReviewMetadata} from "../utils/add/addReviewMetadata";
+import {fetchUsersReviews} from "../utils/fetch/fetchUsersReviews";
+import {addImageToDatabase} from "../utils/add/addImageToDatabase";
+import {fetchImagesByReviewId} from "../utils/fetch/fetchImagesByReviewId";
+import {deleteImagesByReviewId} from "../utils/delete/deleteImagesByReviewId";
+import {addProductName} from "../utils/add/addProductName";
+import {fetchReviewDataById} from "../utils/fetch/fetchReviewDataById";
+import {fetchProductsDataByReviewId} from "../utils/fetch/fetchProductsDataByReviewId";
+import {deleteReviewProductsByReviewId} from "../utils/delete/deleteReviewProductsByReviewId";
+import {fetchSimilarReviews} from "../utils/fetch/fetchSimilarReviews";
+import {deleteReviewById} from "../utils/delete/deleteReviewById";
+import { Request, Response } from "express";
+import {fetchReviewById} from "../utils/fetch/fetchReviewById";
+import {fetchTagsByReviewId} from "../utils/fetch/fetchTagsByReviewId";
+import {fetchUsersByLikes} from "../utils/fetch/fetchUsersByLikes";
+import {fetchUsersByRatings} from "../utils/fetch/fetchUsersByRatings";
+import {Review} from "../types/ReviewType";
+import {fetchLatestReviews} from "../utils/fetch/fetchLatestReviews";
+import {fetchPopularReviews} from "../utils/fetch/fetchPopularReviews";
+import {fetchTags} from "../utils/fetch/fetchTags";
+import {fetchProductNames} from "../utils/fetch/fetchProductNames";
+import {fetchUsernameById} from "../utils/fetch/fetchUsernameById";
+import {fetchExistingRating} from "../utils/fetch/fetchExistingRating";
 
 const multer = require('multer');
 const upload = multer({storage: multer.memoryStorage()});
 
 class reviewController {
-
-    async getUserReviews(req: any, res: any) {
+    async getUserReviews(req: Request, res: Response) {
         try {
             const userId = req.params.userId;
             const reviews = await fetchUsersReviews(userId);
@@ -46,18 +42,17 @@ class reviewController {
             }).reverse());
             res.status(200).json({message: 'Reviews', data: reviewsWithData, code: 200});
         } catch (e) {
-            console.log(e);
             return res.status(500).send({message: 'Internal server error'});
         }
     }
 
-    async getReviewById(req: any, res: any) {
+    async getReviewById(req: Request, res: Response) {
         try {
             const reviewId = req.params.reviewId;
-            const review = await getReviewById(reviewId)
-            const tagNames = await getTagsByReviewId(review.id)
-            const likedUserIds = await getUsersByLikes(review.id);
-            const ratedUserIds = await getUsersByRatings(review.id);
+            const review = await fetchReviewById(reviewId)
+            const tagNames = await fetchTagsByReviewId(review.id)
+            const likedUserIds = await fetchUsersByLikes(review.id);
+            const ratedUserIds = await fetchUsersByRatings(review.id);
             const images = await fetchImagesByReviewId(review.id)
             const {title, assessment, product_id, avg_assessment} = await fetchProductsDataByReviewId(review.id)
             const similarReview = await fetchSimilarReviews(product_id)
@@ -71,65 +66,59 @@ class reviewController {
             review.similarReview = similarReview.filter((review: Review) => review.id !== reviewId)
             res.status(200).json({message: 'Review', data: {...review}, code: 200});
         } catch (e) {
-            console.log(e)
             return res.status(500).send({message: 'Internal server error'});
         }
     }
 
-    async deleteReviewById(req: any, res: any) {
+    async deleteReviewById(req: Request, res: Response) {
         try {
             const reviewId = req.body.reviewId;
             await deleteReviewById(reviewId)
             res.status(200).json({message: 'Review deletion was successful', code: 200});
         } catch (e) {
-            console.log(e)
             return res.status(500).send({message: 'Internal server error'});
         }
     }
 
-    async getLatestReviews(req: any, res: any) {
+    async getLatestReviews(req: Request, res: Response) {
         try {
-            const reviews = await getLatestReviews()
+            const reviews = await fetchLatestReviews()
             const reviewsWithMetadata = await Promise.all(reviews.map(addReviewMetadata));
             res.status(200).json({message: 'Last three reviews', data: reviewsWithMetadata, code: 200});
         } catch (e) {
-            console.log(e)
             return res.status(500).send({message: 'Internal server error'});
         }
     }
 
-    async getPopularReviews(req: any, res: any) {
+    async getPopularReviews(req: Request, res: Response) {
         try {
-            const reviews = await getPopularReviews()
+            const reviews = await fetchPopularReviews()
             const reviewsWithMetadata = await Promise.all(reviews.map(addReviewMetadata));
             res.status(200).json({message: 'Most popular three reviews', data: reviewsWithMetadata, code: 200});
         } catch (e) {
-            console.log(e);
             return res.status(500).send({message: 'Internal server error'});
         }
     }
 
-    async getPopularTags(req: any, res: any) {
+    async getPopularTags(req: Request, res: Response) {
         try {
-            const popularTags = await getTags()
+            const popularTags = await fetchTags()
             res.status(200).json({message: 'Popular tags', data: popularTags, code: 200});
         } catch (e) {
-            console.log(e)
             return res.status(500).send({message: 'Internal server error'});
         }
     }
 
-    async getProductNames(req: any, res: any) {
+    async getProductNames(req: Request, res: Response) {
         try {
-            const productNames = await getProductNames()
+            const productNames = await fetchProductNames()
             res.status(200).json({message: 'Product names', data: productNames, code: 200});
         } catch (e) {
-            console.log(e)
             return res.status(500).send({message: 'Internal server error'});
         }
     }
 
-    async createReview(req: any, res: any) {
+    async createReview(req: any, res: Response) {
         try {
             upload.array('reviewImage')(req, res, async (err: any) => {
                 if (err) {
@@ -140,7 +129,7 @@ class reviewController {
                     return res.status(400).send({message: "You can't attach more than 3 photos"});
                 }
                 const downloadURLs = await Promise.all(files.map((file: File) => uploadImage(file, req)));
-                const authorName = await getUsernameById(req.body.author_id)
+                const authorName = await fetchUsernameById(req.body.author_id)
                 const newReviewId = await addReviewToDatabase(req, authorName);
                 await addTags(req.body.tags, newReviewId);
                 await addProductName(req.body.title, req.body.assessment, newReviewId)
@@ -148,12 +137,11 @@ class reviewController {
                 res.status(201).json({message: 'Review added', code: 201});
             });
         } catch (e) {
-            console.log(e);
-            res.status(400).json({message: 'Error when trying to add a new review', code: 400});
+            res.status(400).json({message: 'Error to add a new review', code: 400});
         }
     }
 
-    async updateReview(req: any, res: any) {
+    async updateReview(req: any, res: Response) {
         try {
             upload.array('reviewImage')(req, res, async (err: any) => {
                 if (err) {
@@ -176,15 +164,14 @@ class reviewController {
                 res.status(200).json({message: 'Review updated', code: 200});
             });
         } catch (e) {
-            console.log(e);
             res.status(400).json({message: 'Review update error', code: 400});
         }
     }
 
-    async setRating(req: any, res: any) {
+    async setRating(req: Request, res: Response) {
         try {
             const {userId, reviewId, value} = req.body;
-            const existingRating = await getExistingRating(userId, reviewId)
+            const existingRating = await fetchExistingRating(userId, reviewId)
             if (existingRating) {
                 const {data: updatedRating, error: updatedRatingError} = await supabase
                     .from('ratings')
@@ -235,12 +222,11 @@ class reviewController {
 
             res.status(200).json({message: 'Set rating', code: 200});
         } catch (e) {
-            console.error(e);
-            res.status(400).json({message: 'Logout error', code: 400});
+            res.status(400).json({message: 'Set rating error', code: 400});
         }
     }
 
-    async changeLikeStatus(req: any, res: any) {
+    async changeLikeStatus(req: Request, res: Response) {
         try {
             const {userId, reviewId} = req.body;
             const {data: existingLike, error} = await supabase
@@ -274,8 +260,7 @@ class reviewController {
                 res.status(200).json({message: 'Like removed', code: 200});
             }
         } catch (e) {
-            console.log(e)
-            res.status(400).json({message: 'Logout error', code: 400})
+            res.status(400).json({message: 'Change like status', code: 400})
         }
     }
 }

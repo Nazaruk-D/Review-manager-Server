@@ -10,8 +10,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateReviewTags = void 0;
-const addTags_1 = require("./addTags");
-const deleteTags_1 = require("./deleteTags");
+const addTags_1 = require("./add/addTags");
+const deleteTags_1 = require("./delete/deleteTags");
 function updateReviewTags(tags, reviewId) {
     return __awaiter(this, void 0, void 0, function* () {
         yield (0, deleteTags_1.deleteTags)(reviewId);

@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supabase_1 = require("../supabase/supabase");
-const addReviewMetadata_1 = require("../utils/addReviewMetadata");
+const addReviewMetadata_1 = require("../utils/add/addReviewMetadata");
 class SearchController {
     getReviews(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -30,7 +30,6 @@ class SearchController {
                 });
             }
             catch (e) {
-                console.log(e);
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });

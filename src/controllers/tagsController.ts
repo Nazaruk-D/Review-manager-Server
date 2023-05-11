@@ -1,14 +1,11 @@
-import {CreateCommentRequest} from "../types/CreateCommentRequest";
-import {getTags} from "../utils/getTags";
-import {getCommentByReview} from "../utils/getCommentByReview";
-import {createComment} from "../utils/createComment";
-import {supabase} from "../supabase/supabase";
-import {addReviewMetadata} from "../utils/addReviewMetadata";
+import { Request, Response } from "express";
+import {fetchTags} from "../utils/fetch/fetchTags";
+
 
 class TagsController {
-    async getTags(req: any, res: any) {
+    async getTags(req: Request, res: Response) {
         try {
-            const tags = await getTags()
+            const tags = await fetchTags()
             return res.status(200).send({message: 'Getting tags successfully', data: tags, statusCode: 200});
         } catch (e) {
             console.log(e)

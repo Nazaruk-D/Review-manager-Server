@@ -13,8 +13,8 @@ exports.addReviewMetadata = void 0;
 const getUsersByLikes_1 = require("./getUsersByLikes");
 const getUsersByRatings_1 = require("./getUsersByRatings");
 const getTotalLikesByUser_1 = require("./getTotalLikesByUser");
-const fetchImagesByReviewId_1 = require("./fetchImagesByReviewId");
-const fetchProductsDataByReviewId_1 = require("./fetchProductsDataByReviewId");
+const fetchImagesByReviewId_1 = require("./fetch/fetchImagesByReviewId");
+const fetchProductsDataByReviewId_1 = require("./fetch/fetchProductsDataByReviewId");
 function addReviewMetadata(review) {
     return __awaiter(this, void 0, void 0, function* () {
         const likedUserIds = yield (0, getUsersByLikes_1.getUsersByLikes)(review.id);

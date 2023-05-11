@@ -1,8 +1,9 @@
 import {supabase} from "../supabase/supabase";
-import {addReviewMetadata} from "../utils/addReviewMetadata";
+import {addReviewMetadata} from "../utils/add/addReviewMetadata";
+import { Request, Response } from "express";
 
 class SearchController {
-    async getReviews(req: any, res: any) {
+    async getReviews(req: Request, res: Response) {
         try {
             const value = req.params.value;
             const {data: reviews, error: reviewError} = await supabase
@@ -18,7 +19,6 @@ class SearchController {
                 statusCode: 200
             });
         } catch (e) {
-            console.log(e)
             return res.status(500).send({message: 'Internal server error'});
         }
     }

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const getCommentByReview_1 = require("../utils/getCommentByReview");
+const getCommentByReview_1 = require("../utils/comment/getCommentByReview");
 const supabase_1 = require("../supabase/supabase");
 class CommentsController {
     getComments(req, res) {
@@ -19,8 +19,7 @@ class CommentsController {
                 const comments = yield (0, getCommentByReview_1.getCommentByReview)(reviewId);
                 return res.status(200).send({ message: 'Getting comments successfully', data: comments, statusCode: 200 });
             }
-            catch (e) {
-                console.log(e);
+            catch (error) {
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -35,8 +34,7 @@ class CommentsController {
                     .match({ id: commentId });
                 return res.status(200).send({ message: 'Remove comments successfully', statusCode: 200 });
             }
-            catch (e) {
-                console.log(e);
+            catch (error) {
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });

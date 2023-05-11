@@ -1,17 +1,17 @@
-import express from 'express'
-const cors = require('cors')
-const app = express()
-const cookieParser = require('cookie-parser')
+const express = require('express')
 const reviewRouter = require('./src/routers/reviewRouter')
 const usersRouter = require('./src/routers/usersRouter')
 const searchRouter = require('./src/routers/searchRouter')
 const commentRouter = require('./src/routers/commentRouter')
 const tagsRouter = require('./src/routers/tagsRouter')
 const adminRouter = require('./src/routers/adminRouter')
-const PORT = process.env.PORT || 7542;
-import dotenv from 'dotenv';
-dotenv.config();
+const cors = require('cors')
+const cookieParser = require('cookie-parser')
+const dotenv = require('dotenv');
 
+const PORT = process.env.PORT || 7542;
+const app = express()
+dotenv.config();
 
 const corsOptions = {
     origin: (origin: any, callback: any) => {
@@ -32,11 +32,6 @@ app.use('/search', searchRouter);
 app.use('/comment', commentRouter);
 app.use('/tags', tagsRouter);
 app.use('/admin', adminRouter);
-
-app.get("/", (req, res) => {
-    res.json({message: "hi from Express App"})
-    return console.log('Connection closed')
-})
 
 app.listen(PORT, () => {
     console.log(`I started listening port: ${PORT}`)

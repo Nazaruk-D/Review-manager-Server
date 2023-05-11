@@ -1,22 +1,22 @@
 import {supabase} from "../supabase/supabase";
-import {deleteReviewById} from "../utils/deleteReviewById";
+import {deleteReviewById} from "../utils/delete/deleteReviewById";
+import { Request, Response } from "express";
 
 
 class AdminController {
-    async fetchUsers(req: any, res: any) {
+    async fetchUsers(req: Request, res: Response) {
         try {
-            const {data: users, error: reviewError} = await supabase
+            const { data: users, error: reviewError } = await supabase
                 .from('users')
                 .select('*')
-                .order('created_at', {ascending: false});
-            return res.status(200).send({message: 'Getting users successfully', data: users, statusCode: 200});
-        } catch (e) {
-            console.log(e)
+                .order('created_at', { ascending: false });
+            return res.status(200).send({ message: 'Getting users successfully', data: users, statusCode: 200 });
+        } catch (error) {
             return res.status(500).send({message: 'Internal server error'});
         }
     }
 
-    async changeAdminStatus(req: any, res: any) {
+    async changeAdminStatus(req: Request, res: Response) {
         try {
             const {userId, role} = req.body
             const {error} = await supabase
@@ -28,13 +28,12 @@ class AdminController {
                 return res.status(500).send({message: 'Internal server error'});
             }
             return res.status(200).send({message: 'User role changed', statusCode: 201});
-        } catch (e) {
-            console.log(e)
+        } catch (error) {
             return res.status(500).send({message: 'Internal server error'});
         }
     }
 
-    async changeIsBlockedStatus(req: any, res: any) {
+    async changeIsBlockedStatus(req: Request, res: Response) {
         try {
             const {userId, status} = req.body
             const {error} = await supabase
@@ -46,13 +45,12 @@ class AdminController {
                 return res.status(500).send({message: 'Internal server error'});
             }
             return res.status(200).send({message: 'User status changed', statusCode: 201});
-        } catch (e) {
-            console.log(e)
+        } catch (error) {
             return res.status(500).send({message: 'Internal server error'});
         }
     }
 
-    async deleteUser(req: any, res: any) {
+    async deleteUser(req: Request, res: Response) {
         try {
             const { userId } = req.params;
             const { data: userReviews, error: userReviewsError } = await supabase
@@ -74,9 +72,8 @@ class AdminController {
                 return res.status(500).send({ message: deleteUserError.message });
             }
             return res.status(200).send({ message: 'User deleted', statusCode: 201 });
-        } catch (e) {
-            console.log(e);
-            return res.status(500).send({ message: 'Internal server error' });
+        } catch (error) {
+            return res.status(500).send({message: 'Internal server error'});
         }
     }
 

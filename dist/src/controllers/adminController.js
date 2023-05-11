@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const supabase_1 = require("../supabase/supabase");
-const deleteReviewById_1 = require("../utils/deleteReviewById");
+const deleteReviewById_1 = require("../utils/delete/deleteReviewById");
 class AdminController {
     fetchUsers(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -21,8 +21,7 @@ class AdminController {
                     .order('created_at', { ascending: false });
                 return res.status(200).send({ message: 'Getting users successfully', data: users, statusCode: 200 });
             }
-            catch (e) {
-                console.log(e);
+            catch (error) {
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -41,8 +40,7 @@ class AdminController {
                 }
                 return res.status(200).send({ message: 'User role changed', statusCode: 201 });
             }
-            catch (e) {
-                console.log(e);
+            catch (error) {
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -61,8 +59,7 @@ class AdminController {
                 }
                 return res.status(200).send({ message: 'User status changed', statusCode: 201 });
             }
-            catch (e) {
-                console.log(e);
+            catch (error) {
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
@@ -90,8 +87,7 @@ class AdminController {
                 }
                 return res.status(200).send({ message: 'User deleted', statusCode: 201 });
             }
-            catch (e) {
-                console.log(e);
+            catch (error) {
                 return res.status(500).send({ message: 'Internal server error' });
             }
         });
