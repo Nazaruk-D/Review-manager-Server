@@ -1,7 +1,7 @@
 import {supabase} from "../supabase/supabase";
 
-export async function addReviewToDatabase(req: any) {
-    let {author_id, review_title, body, category, author_name} = req.body;
+export async function addReviewToDatabase(req: any, author_name: string) {
+    let {author_id, review_title, body, category} = req.body;
     const { data, error } = await supabase
         .from("reviews")
         .insert({

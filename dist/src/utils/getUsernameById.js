@@ -9,26 +9,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addReviewToDatabase = void 0;
+exports.getUsernameById = void 0;
 const supabase_1 = require("../supabase/supabase");
-function addReviewToDatabase(req, author_name) {
+function getUsernameById(userId) {
     return __awaiter(this, void 0, void 0, function* () {
-        let { author_id, review_title, body, category } = req.body;
-        const { data, error } = yield supabase_1.supabase
-            .from("reviews")
-            .insert({
-            review_title,
-            body,
-            category,
-            author_id,
-            author_name,
-        })
-            .select("id")
-            .single();
+        const { data, error } = yield supabase_1.supabase.from('users').select('user_name').eq('id', userId).single();
         if (error) {
-            console.log(error);
+            console.error(error);
+            return "";
         }
-        return data.id;
+        return data === null || data === void 0 ? void 0 : data.user_name;
     });
 }
-exports.addReviewToDatabase = addReviewToDatabase;
+exports.getUsernameById = getUsernameById;

@@ -29,6 +29,7 @@ import {deleteReviewProductsByReviewId} from "../utils/deleteReviewProductsByRev
 import {getProductNames} from "../utils/getProductNames";
 import {fetchSimilarReviews} from "../utils/fetchSimilarReviews";
 import {deleteReviewById} from "../utils/deleteReviewById";
+import {getUsernameById} from "../utils/getUsernameById";
 
 const multer = require('multer');
 const upload = multer({storage: multer.memoryStorage()});
@@ -139,7 +140,8 @@ class reviewController {
                     return res.status(400).send({message: "You can't attach more than 3 photos"});
                 }
                 const downloadURLs = await Promise.all(files.map((file: File) => uploadImage(file, req)));
-                const newReviewId = await addReviewToDatabase(req);
+                const authorName = await getUsernameById(req.body.author_id)
+                const newReviewId = await addReviewToDatabase(req, authorName);
                 await addTags(req.body.tags, newReviewId);
                 await addProductName(req.body.title, req.body.assessment, newReviewId)
                 await addImageToDatabase(downloadURLs, newReviewId)
